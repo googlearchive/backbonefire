@@ -56,7 +56,6 @@ _.extend(Backbone.Firebase.prototype, {
   create: function(model, cb) {
     if (!model.id) {
       model.id = this._fbref.push().name();
-      model.set(model.idAttribute, model.id);
     }
     var val = model.toJSON();
     this._fbref.child(model.id).set(val, _.bind(function(success) {
@@ -143,4 +142,82 @@ Backbone.sync = function(method, model, options, error) {
 	return syncMethod.apply(this, [method, model, options, error]);
 };
 
+
+// Custom Firebase Model.
+Backbone.Firebase.Model = Backbone.Model.extend({
+  save: function() {
+    throw new Error("Save called on a Firebase Model");
+  },
+  fetch: function() {
+    throw new Error("Fetch called on a Firebase collection");
+  },
+
+  constructor: function(attributes, options) {
+    if (options && options.firebase) {
+      this.firebase = options.firebase;
+    }
+    switch (typeof this.firebase) {
+      case "object": break;
+      case "string": this.firebase = new Firebase(this.firebase); break;
+      default: throw new Error("Invalid firebase reference created");
+    }
+    // Add handler for remote event.
+    this.firebase.on("value", this._valueChanged.bind(this));
+  }
+});
+
+// Custom Firebase Collection.
+Backbone.Firebase.Collection = Backbone.Collection.extend({
+  sync: function() {
+    throw new Error("Sync called on a Firebase collection");
+  },
+  fetch: function() {
+    throw new Error("Fetch called on a Firebase collection");
+  },
+
+  constructor: function(models, options) {
+    if (options && options.firebase) {
+      this.firebase = options.firebase;
+    }
+    switch (typeof this.firebase) {
+      case "object": break;
+      case "string": this.firebase = new Firebase(this.firebase); break;
+      default: throw new Error("Invalid firebase reference created");
+    }
+    // Add handlers for remote events.
+    this.firebase.on("child_added", this._childAdded.bind(this));
+    this.firebase.on("child_moved", this._childMoved.bind(this));
+    this.firebase.on("child_changed", this._childChanged.bind(this));
+    this.firebase.on("child_removed", this._childRemoved.bind(this));
+    return Backbone.Collection.apply(this, arguments);
+  },
+
+  // Local event handlers.
+  add: function(models, options) {
+
+  },
+
+  remove: function(models, options) {
+
+  },
+
+  _childAdded: function() {
+
+  },
+
+  _childMoved: function() {
+
+  },
+
+  _childChanged: function() {
+
+  },
+
+  _childRemoved: function() {
+
+  }
+
+});
+
 })();
+
