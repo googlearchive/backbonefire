@@ -10,7 +10,7 @@ var Backbone = this.Backbone;
 Backbone.Firebase = function(ref) {
   this._fbref = ref;
   this._children = [];
-  if (typeof name == "string") {
+  if (typeof ref == "string") {
     this._fbref = new Firebase(ref);
   }
 
@@ -175,7 +175,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     // Add handlers for all models in this collection, and any future ones
     // that may be added.
     function _updateModel(model, options) {
-      this.firebase.child(model.id).set(model.toJSON());
+      this.firebase.child(model.id).update(model.toJSON());
     }
     function _unUpdateModel(model) {
       model.off("change", _updateModel, this);
