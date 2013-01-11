@@ -15,7 +15,6 @@ $(function(){
     defaults: function() {
       return {
         title: "empty todo...",
-        order: Todos.nextOrder(),
         done: false
       };
     },
@@ -44,7 +43,7 @@ $(function(){
     model: Todo,
 
     // Save all of the todo items in a Firebase.
-    firebase: new Backbone.Firebase("https://backbone.firebaseio.com"),
+    firebase: "https://backbone.firebaseio.com",
 
     // Filter down the list of all todo items that are finished.
     done: function() {
@@ -54,20 +53,7 @@ $(function(){
     // Filter down the list to only todo items that are still not finished.
     remaining: function() {
       return this.without.apply(this, this.done());
-    },
-
-    // We keep the Todos in sequential order, despite being saved by unordered
-    // GUID in the database. This generates the next order number for new items.
-    nextOrder: function() {
-      if (!this.length) return 1;
-      return this.last().get('order') + 1;
-    },
-
-    // Todos are sorted by their original insertion order.
-    comparator: function(todo) {
-      return todo.get('order');
     }
-
   });
 
   // Create our global collection of **Todos**.
@@ -99,7 +85,7 @@ $(function(){
     // app, we set a direct reference on the model for convenience.
     initialize: function() {
       this.listenTo(this.model, 'change', this.render);
-      this.listenTo(this.model, 'destroy', this.remove);
+      this.listenTo(this.model, 'remove', this.remove);
     },
 
     // Re-render the titles of the todo item.
@@ -137,9 +123,9 @@ $(function(){
       if (e.keyCode == 13) this.close();
     },
 
-    // Remove the item, destroy the model.
+    // Remove the item from the collection.
     clear: function() {
-      this.model.destroy();
+      Todos.remove(this.model);
     }
 
   });
@@ -168,13 +154,10 @@ $(function(){
     // collection, when items are added or changed. Kick things off by
     // loading any preexisting todos that might be saved in *Firebase*.
     initialize: function() {
-
       this.input = this.$("#new-todo");
       this.allCheckbox = this.$("#toggle-all")[0];
 
-      this.listenTo(Todos, 'add', this.addOne);
-      this.listenTo(Todos, 'update', this.addAll);
-      this.listenTo(Todos, 'reset', this.addAll);
+      this.listenTo(Todos, 'add', this.add);
       this.listenTo(Todos, 'all', this.render);
 
       this.footer = this.$('footer');
@@ -201,14 +184,9 @@ $(function(){
 
     // Add a single todo item to the list by creating a view for it, and
     // appending its element to the `<ul>`.
-    addOne: function(todo) {
+    add: function(todo) {
       var view = new TodoView({model: todo});
       this.$("#todo-list").append(view.render().el);
-    },
-
-    // Add all items in the **Todos** collection at once.
-    addAll: function() {
-      Todos.each(this.addOne);
     },
 
     // If you hit return in the main input field, create new **Todo** model,
@@ -217,13 +195,15 @@ $(function(){
       if (e.keyCode != 13) return;
       if (!this.input.val()) return;
 
-      Todos.create({title: this.input.val()});
+      Todos.add({title: this.input.val()});
       this.input.val('');
     },
 
-    // Clear all done todo items, destroying their models.
+    // Clear all done todo items.
     clearCompleted: function() {
-      _.invoke(Todos.done(), 'destroy');
+      _.each(Todos.done(), function(model) {
+        Todos.remove(model);
+      });
       return false;
     },
 

@@ -1,6 +1,5 @@
 /**
- * Backbone Firebase Adapter
- * Based on the Backbone localStorage Adapter.
+ * Backbone Firebase Adapter.
  */
 
 (function() {
@@ -142,30 +141,6 @@ Backbone.sync = function(method, model, options, error) {
 	return syncMethod.apply(this, [method, model, options, error]);
 };
 
-
-// Custom Firebase Model.
-Backbone.Firebase.Model = Backbone.Model.extend({
-  save: function() {
-    throw new Error("Save called on a Firebase Model");
-  },
-  fetch: function() {
-    throw new Error("Fetch called on a Firebase collection");
-  },
-
-  constructor: function(attributes, options) {
-    if (options && options.firebase) {
-      this.firebase = options.firebase;
-    }
-    switch (typeof this.firebase) {
-      case "object": break;
-      case "string": this.firebase = new Firebase(this.firebase); break;
-      default: throw new Error("Invalid firebase reference created");
-    }
-    // Add handler for remote event.
-    this.firebase.on("value", this._valueChanged.bind(this));
-  }
-});
-
 // Custom Firebase Collection.
 Backbone.Firebase.Collection = Backbone.Collection.extend({
   sync: function() {
@@ -173,6 +148,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
   fetch: function() {
     throw new Error("Fetch called on a Firebase collection");
+  },
+  create: function() {
+    throw new Error("Please use Backbone.Collection.add instead");
   },
 
   constructor: function(models, options) {
@@ -184,39 +162,101 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       case "string": this.firebase = new Firebase(this.firebase); break;
       default: throw new Error("Invalid firebase reference created");
     }
+    
     // Add handlers for remote events.
     this.firebase.on("child_added", this._childAdded.bind(this));
     this.firebase.on("child_moved", this._childMoved.bind(this));
     this.firebase.on("child_changed", this._childChanged.bind(this));
     this.firebase.on("child_removed", this._childRemoved.bind(this));
-    return Backbone.Collection.apply(this, arguments);
+
+    // Apply parent constructor (this will also call initialize).
+    Backbone.Collection.apply(this, arguments);
+
+    // Add handlers for all models in this collection, and any future ones
+    // that may be added.
+    function _updateModel(model, options) {
+      this.firebase.child(model.id).set(model.toJSON());
+    }
+    function _unUpdateModel(model) {
+      model.off("change", _updateModel, this);
+    }
+
+    for (var i = 0; i < this.models.length; i++) {
+      this.models[i].on("change", _updateModel, this);
+      this.models[i].once("remove", _unUpdateModel, this);
+    }
+    this.on("add", function(model) {
+      model.on("change", _updateModel, this);
+      model.once("remove", _unUpdateModel, this);
+    }, this);
   },
 
-  // Local event handlers.
-  add: function(models, options) {
+  comparator: function(model) {
+    return model.id;
+  },
 
+  add: function(models, options) {
+    if (options) {
+      throw new Error("Backbone.Firebase.Collection.add called with options")
+    }
+    var parsed = this._parseModels(models);
+    for (var i = 0; i < parsed.length; i++) {
+      var model = parsed[i];
+      this.firebase.child(model.id).set(model);
+    }
   },
 
   remove: function(models, options) {
-
+    if (options) {
+      throw new Error("Backbone.Firebase.Collection.remove called with options");
+    }
+    var parsed = this._parseModels(models);
+    for (var i = 0; i < parsed.length; i++) {
+      var model = parsed[i];
+      this.firebase.child(model.id).set(null);
+    }
   },
 
-  _childAdded: function() {
-
+  // XXX: Options will be ignored for add & remove!
+  _parseModels: function(models) {
+    var ret = [];
+    models = _.isArray(models) ? models.slice() : [models];
+    for (var i = 0; i < models.length; i++) {
+      var model = models[i];
+      if (!model.id) {
+        model.id = this.firebase.push().name();
+      }
+      if (model.toJSON && typeof model.toJSON == "function") {
+        model = model.toJSON();
+      }
+      ret.push(model);
+    }
+    return ret;
   },
 
-  _childMoved: function() {
-
+  _childAdded: function(snap) {
+    Backbone.Collection.prototype.add.apply(this, [snap.val()]);
   },
 
-  _childChanged: function() {
-
+  _childMoved: function(snap) {
+    // XXX: Can this occur without the ID changing?
   },
 
-  _childRemoved: function() {
+  _childChanged: function(snap) {
+    var model = snap.val();
+    var item = _.find(this.models, function(child) {
+      return child.id == model.id
+    });
+    if (!item) {
+      // ???
+      throw new Error("Could not find model with ID " + model.id);
+    }
+    item.set(model);
+  },
 
+  _childRemoved: function(snap) {
+    Backbone.Collection.prototype.remove.apply(this, [snap.val()]);
   }
-
 });
 
 })();
