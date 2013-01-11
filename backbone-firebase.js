@@ -24,11 +24,7 @@ Backbone.Firebase = function(ref) {
 _.extend(Backbone.Firebase.prototype, {
 
   _childAdded: function(childSnap, prevChild) {
-    this._children.push(childSnap.val());
-  },
-  _childMoved: function(childSnap, prevChild) {
     var model = childSnap.val();
-    this._children.splice(index, 1);
     if (prevChild) {
       var item = _.find(this._children, function(child) {
         return child.id == prevChild
@@ -37,6 +33,13 @@ _.extend(Backbone.Firebase.prototype, {
     } else {
       this._children.unshift(model);
     }
+  },
+  _childMoved: function(childSnap, prevChild) {
+    var model = childSnap.val();
+    this._children = _.reject(this._children, function(child) {
+      return child.id == model.id;
+    });
+    this._childAdded(childSnap, prevChild);
   },
   _childChanged: function(childSnap, prevChild) {
     var model = childSnap.val();
