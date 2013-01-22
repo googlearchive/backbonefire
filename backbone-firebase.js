@@ -211,13 +211,14 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   remove: function(models, options) {
-    if (options) {
-      throw new Error("Backbone.Firebase.Collection.remove called with options");
-    }
     var parsed = this._parseModels(models);
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.child(model.id).set(null);
+      this.firebase.child(model.id).set(null, function() {
+        if (options && options.success) {
+          options.success(models, options);
+        }
+      });
     }
   },
 
