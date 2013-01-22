@@ -1,6 +1,7 @@
 // An example Backbone application contributed by
 // [Jérôme Gravel-Niquet](http://jgn.me/). This demo uses a simple
-// Firebase adapter to persist Backbone models.
+// [LocalStorage adapter](backbone-localstorage.html)
+// to persist Backbone models within your browser.
 
 // Load the application once the DOM is ready, using `jQuery.ready`:
 $(function(){
@@ -37,13 +38,14 @@ $(function(){
   // Todo Collection
   // ---------------
 
-  // The collection of todos is backed by *Firebase*.
+  // The collection of todos is backed by *localStorage* instead of a remote
+  // server.
   var TodoList = Backbone.Collection.extend({
 
     // Reference to this collection's model.
     model: Todo,
 
-    // Save all of the todo items in a Firebase.
+    // Save all of the todo items under the `"todos-backbone"` namespace.
     firebase: new Backbone.Firebase("https://backbone.firebaseio.com"),
 
     // Filter down the list of all todo items that are finished.
@@ -166,21 +168,20 @@ $(function(){
 
     // At initialization we bind to the relevant events on the `Todos`
     // collection, when items are added or changed. Kick things off by
-    // loading any preexisting todos that might be saved in *Firebase*.
+    // loading any preexisting todos that might be saved in *localStorage*.
     initialize: function() {
 
       this.input = this.$("#new-todo");
       this.allCheckbox = this.$("#toggle-all")[0];
 
       this.listenTo(Todos, 'add', this.addOne);
-      this.listenTo(Todos, 'update', this.addAll);
       this.listenTo(Todos, 'reset', this.addAll);
       this.listenTo(Todos, 'all', this.render);
 
       this.footer = this.$('footer');
       this.main = $('#main');
 
-      setInterval(Todos.fetch.bind(Todos, {update: true}), 1000);
+      setInterval(Todos.fetch.bind(Todos), 1000);
     },
 
     // Re-rendering the App just means refreshing the statistics -- the rest
@@ -210,11 +211,12 @@ $(function(){
 
     // Add all items in the **Todos** collection at once.
     addAll: function() {
-      Todos.each(this.addOne);
+      this.$("#todo-list").html("");
+      Todos.each(this.addOne, this);
     },
 
     // If you hit return in the main input field, create new **Todo** model,
-    // persisting it to *Firebase*.
+    // persisting it to *localStorage*.
     createOnEnter: function(e) {
       if (e.keyCode != 13) return;
       if (!this.input.val()) return;

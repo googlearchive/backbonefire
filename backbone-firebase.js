@@ -25,6 +25,7 @@ _.extend(Backbone.Firebase.prototype, {
 
   _childAdded: function(childSnap, prevChild) {
     var model = childSnap.val();
+    model.id = childSnap.name();
     if (prevChild) {
       var item = _.find(this._children, function(child) {
         return child.id == prevChild
@@ -43,6 +44,7 @@ _.extend(Backbone.Firebase.prototype, {
   },
   _childChanged: function(childSnap, prevChild) {
     var model = childSnap.val();
+    model.id = childSnap.name();
     var item = _.find(this._children, function(child) {
       return child.id == model.id
     });
@@ -86,7 +88,6 @@ _.extend(Backbone.Firebase.prototype, {
 
   update: function(model, cb) {
     var val = model.toJSON();
-    console.log("called update with " + JSON.stringify(val));
     this._fbref.child(model.id).update(val, function(success) {
       if (success) {
         cb(null, val);
