@@ -14,9 +14,9 @@ Include both firebase.js and backbone-firebase.js in your application.
 
 There are two primary ways to use the bindings:
 
-### METHOD 1: Backbone.Firebase.Collection (Recommended)
+### METHOD 1: Backbone.Firebase.Collection
 
-You will now have access to a new object, `Backbone.Firebase.Collection`. You
+You will have access to a new object, `Backbone.Firebase.Collection`. You
 may extend this object, and must provide a URL or Firebase reference as the
 `firebase` property. For example:
 
@@ -29,7 +29,7 @@ Any models added to the collection, will be synchronized to the provided
 Firebase. Any other clients using the Backbone binding will also receive
 `add`, `remove` and `changed` events on the collection as appropriate.
 
-** BE AWARE! ** The important difference between using a regular collection and
+**BE AWARE!** The important difference between using a regular collection and
 a Firebase collection is that **you do not need to call any functions that will
 affect _remote_ data**. If you call any of the `fetch`, `sync`, `save`, `create`
 or `destroy` methods, **the library will throw an exception**.
