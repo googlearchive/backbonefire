@@ -30,13 +30,13 @@ Firebase. Any other clients using the Backbone binding will also receive
 `add`, `remove` and `changed` events on the collection as appropriate.
 
 **BE AWARE!** The important difference between using a regular collection and
-a Firebase collection is that **you do not need to call any functions that will
-affect _remote_ data**. If you call any of the `fetch`, `sync`, `save`, `create`
-or `destroy` methods, **the library will throw an exception**.
+a Firebase collection is that you do not need to call any functions that will
+affect _remote_ data. If you call `fetch` or `sync` on the collection, **the
+library will ignore it silently**.
 
-You should add and remove your models to the collection as normal, and the
-_remote_ data is instantly updated, and events on all your other clients will
-also be immediately triggered!
+You should add and remove your models to the collection as your normally would,
+(via `add` and `remove`) and the _remote_ data is instantly updated.
+Subsequently, the same events will fire on all your other clients immediately!
 
 Please see [todos.js](https://github.com/firebase/backfire/blob/master/todos.js)
 for an example of how to use this special collection object.

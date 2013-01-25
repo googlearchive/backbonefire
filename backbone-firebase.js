@@ -148,13 +148,11 @@ Backbone.sync = function(method, model, options, error) {
 // Custom Firebase Collection.
 Backbone.Firebase.Collection = Backbone.Collection.extend({
   sync: function() {
-    throw new Error("Sync called on a Firebase collection");
+    this._log("Sync called on a Firebase collection, ignoring.");
   },
+
   fetch: function() {
-    throw new Error("Fetch called on a Firebase collection");
-  },
-  create: function() {
-    throw new Error("Please use Backbone.Collection.add instead");
+    this._log("Fetch called on a Firebase collection, ignoring.");
   },
 
   constructor: function(models, options) {
@@ -200,29 +198,46 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   add: function(models, options) {
-    if (options) {
-      throw new Error("Backbone.Firebase.Collection.add called with options")
-    }
     var parsed = this._parseModels(models);
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
       this.firebase.child(model.id).set(model);
     }
+    // TODO: Implement options.success
   },
 
   remove: function(models, options) {
     var parsed = this._parseModels(models);
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.child(model.id).set(null, function() {
-        if (options && options.success) {
-          options.success(models, options);
-        }
-      });
+      this.firebase.child(model.id).set(null);
+    }
+    // TODO: Implement options.success
+  },
+
+  create: function(model, options) {
+    this._log("Create called, aliasing to add. Consider using Collection.add!");
+    options = options ? _.clone(options) : {};
+    if (options.wait) {
+      this._log("Wait option provided to create, ignoring.");
+    }
+    model = Backbone.Collection.prototype._prepareModel.apply(
+      this, [model, options]
+    );
+    if (!model) {
+      return false;
+    }
+    this.add([model], options);
+    return model;
+  },
+
+  _log: function(msg) {
+    if (console && console.log) {
+      console.log(msg);
     }
   },
 
-  // XXX: Options will be ignored for add & remove!
+  // TODO: Options will be ignored for add & remove, document this!
   _parseModels: function(models) {
     var ret = [];
     models = _.isArray(models) ? models.slice() : [models];
@@ -244,7 +259,8 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   _childMoved: function(snap) {
-    // XXX: Can this occur without the ID changing?
+    // TODO: Investigate: can this occur without the ID changing?
+    this._log("_childMoved called with " + snap.val());
   },
 
   _childChanged: function(snap) {
@@ -253,7 +269,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       return child.id == model.id
     });
     if (!item) {
-      // ???
+      // TODO: Investigate: what is the right way to handle this case?
       throw new Error("Could not find model with ID " + model.id);
     }
     item.set(model);
