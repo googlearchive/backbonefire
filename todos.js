@@ -113,7 +113,7 @@ $(function(){
       if (!value) {
         this.clear();
       } else {
-        this.model.save({title: value});
+        this.model.set({title: value});
         this.$el.removeClass("editing");
       }
     },
@@ -157,7 +157,8 @@ $(function(){
       this.input = this.$("#new-todo");
       this.allCheckbox = this.$("#toggle-all")[0];
 
-      this.listenTo(Todos, 'add', this.add);
+      this.listenTo(Todos, 'add', this.addOne);
+      this.listenTo(Todos, 'reset', this.addAll)
       this.listenTo(Todos, 'all', this.render);
 
       this.footer = this.$('footer');
@@ -184,9 +185,14 @@ $(function(){
 
     // Add a single todo item to the list by creating a view for it, and
     // appending its element to the `<ul>`.
-    add: function(todo) {
+    addOne: function(todo) {
       var view = new TodoView({model: todo});
       this.$("#todo-list").append(view.render().el);
+    },
+
+    // Add all items in the **Todos** collection at once.
+    addAll: function() {
+      Todos.each(this.addOne, this);
     },
 
     // If you hit return in the main input field, create new **Todo** model,
@@ -201,7 +207,7 @@ $(function(){
 
     // Clear all done todo items.
     clearCompleted: function() {
-      _.each(Todos.done(), function(model) {
+      Todos.done().forEach(function(model) {
         Todos.remove(model);
       });
       return false;
@@ -209,7 +215,7 @@ $(function(){
 
     toggleAllComplete: function () {
       var done = this.allCheckbox.checked;
-      Todos.each(function (todo) { todo.save({'done': done}); });
+      Todos.each(function (todo) { todo.set({'done': done}); });
     }
 
   });
