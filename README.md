@@ -5,6 +5,8 @@ The bindings let you use a special Collection type that will automatically
 synchronize all models contained within it to Firebase, without the need
 to make explicit calls to save or sync.
 
+### [Live Demo](http://firebase.github.com/backfire)
+
 Usage
 -----
 Include both firebase.js and backbone-firebase.js in your application.
