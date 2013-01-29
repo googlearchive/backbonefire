@@ -19,7 +19,7 @@ There are two primary ways to use the bindings:
 ### METHOD 1: Backbone.Firebase.Collection
 
 You will have access to a new object, `Backbone.Firebase.Collection`. You
-may extend this object, and must provide a URL or Firebase reference as the
+may extend this object, and must provide a Firebase URL or Firebase reference as the
 `firebase` property. For example:
 
     var TodoList = Backbone.Firebase.Collection.extend({
@@ -27,7 +27,7 @@ may extend this object, and must provide a URL or Firebase reference as the
       firebase: "https://<your-namespace>.firebaseio.com"
     });
 
-Any models added to the collection, will be synchronized to the provided
+Any models added to the collection will be synchronized to the provided
 Firebase. Any other clients using the Backbone binding will also receive
 `add`, `remove` and `changed` events on the collection as appropriate.
 
@@ -37,8 +37,8 @@ affect _remote_ data. If you call `fetch` or `sync` on the collection, **the
 library will ignore it silently**.
 
 You should add and remove your models to the collection as your normally would,
-(via `add` and `remove`) and the _remote_ data is instantly updated.
-Subsequently, the same events will fire on all your other clients immediately!
+(via `add` and `remove`) and _remote_ data will be instantly updated.
+Subsequently, the same events will fire on all your other clients immediately.
 
 Please see [todos.js](https://github.com/firebase/backfire/blob/master/todos.js)
 for an example of how to use this special collection object.
@@ -66,7 +66,7 @@ the provided Firebase with the appropriate data. The same is true for the
 `save` and `destroy` methods on a model.
 
 Please see [todos-sync.js](https://github.com/firebase/backfire/blob/master/todos-sync.js)
-for ana example of how to use this feature.
+for an example of how to use this feature.
 
 License
 -------
