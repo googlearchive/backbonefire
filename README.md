@@ -5,7 +5,7 @@ The bindings let you use a special Collection type that will automatically
 synchronize all models contained within it to Firebase, without the need
 to make explicit calls to save or sync.
 
-### Live Demo: [Real-time TODO app](http://firebase.github.com/backfire)
+### Live Demo: <a target="_blank" href="http://firebase.github.com/backfire">Real-time TODO app</a>.
 
 Usage
 -----
@@ -24,7 +24,7 @@ may extend this object, and must provide a Firebase URL or Firebase reference as
 
     var TodoList = Backbone.Firebase.Collection.extend({
       model: Todo,
-      firebase: "https://<your-namespace>.firebaseio.com"
+      firebase: "https://<your-firebase>.firebaseio.com"
     });
 
 Any models added to the collection will be synchronized to the provided
