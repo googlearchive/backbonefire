@@ -164,15 +164,15 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       case "string": this.firebase = new Firebase(this.firebase); break;
       default: throw new Error("Invalid firebase reference created");
     }
+
+    // Apply parent constructor (this will also call initialize).
+    Backbone.Collection.apply(this, arguments);
     
     // Add handlers for remote events.
     this.firebase.on("child_added", this._childAdded.bind(this));
     this.firebase.on("child_moved", this._childMoved.bind(this));
     this.firebase.on("child_changed", this._childChanged.bind(this));
     this.firebase.on("child_removed", this._childRemoved.bind(this));
-
-    // Apply parent constructor (this will also call initialize).
-    Backbone.Collection.apply(this, arguments);
 
     // Add handlers for all models in this collection, and any future ones
     // that may be added.
