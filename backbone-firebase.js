@@ -142,7 +142,7 @@ Backbone.sync = function(method, model, options, error) {
   if (model.firebase || (model.collection && model.collection.firebase)) {
     syncMethod = Backbone.Firebase.sync;
   }
-	return syncMethod.apply(this, [method, model, options, error]);
+  return syncMethod.apply(this, [method, model, options, error]);
 };
 
 // Custom Firebase Collection.
@@ -162,12 +162,13 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     switch (typeof this.firebase) {
       case "object": break;
       case "string": this.firebase = new Firebase(this.firebase); break;
+      case "function": this.firebase = this.firebase(); break;
       default: throw new Error("Invalid firebase reference created");
     }
 
     // Apply parent constructor (this will also call initialize).
     Backbone.Collection.apply(this, arguments);
-    
+
     // Add handlers for remote events.
     this.firebase.on("child_added", this._childAdded.bind(this));
     this.firebase.on("child_moved", this._childMoved.bind(this));
@@ -280,5 +281,43 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   }
 });
 
-})();
+// Custom Firebase Model.
+Backbone.Firebase.Model = Backbone.Model.extend({
+  save: function() {
+    this._log("Save called on a Firebase model, ignoring.");
+  },
 
+  destroy: function() {
+    this._log("Destroy called on a Firebase model, ignoring.");
+  },
+
+  constructor: function(model, options) {
+    if (options && options.firebase) {
+      this.firebase = options.firebase;
+    }
+    switch (typeof this.firebase) {
+      case "object": break;
+      case "string": this.firebase = new Firebase(this.firebase); break;
+      case "function": this.firebase = this.firebase(); break;
+      default: throw new Error("Invalid firebase reference created");
+    }
+
+    // Apply parent constructor (this will also call initialize).
+    Backbone.Model.apply(this, arguments);
+
+    // Add handlers for remote events.
+    this.firebase.on("value", this._modelChanged.bind(this));
+
+    function _updateModel(model, options) {
+      this.firebase.update(model.toJSON());
+    }
+    this.on("change", _updateModel, this);
+  },
+
+  _modelChanged: function(snap) {
+    this.set(snap.val());
+  }
+  
+});
+
+})();
