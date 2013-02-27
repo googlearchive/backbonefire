@@ -287,8 +287,10 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     this._log("Save called on a Firebase model, ignoring.");
   },
 
-  destroy: function() {
-    this._log("Destroy called on a Firebase model, ignoring.");
+  destroy: function(options) {
+    // TODO: Implement success and error callbacks.
+    this.firebase.set(null);
+    this.trigger('destroy', this, this.collection, options);
   },
 
   constructor: function(model, options) {
@@ -308,14 +310,21 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     // Add handlers for remote events.
     this.firebase.on("value", this._modelChanged.bind(this));
 
-    function _updateModel(model, options) {
+    this.on("change", this._updateModel, this);
+  },
+
+  _updateModel: function(model, options) {
       this.firebase.update(model.toJSON());
-    }
-    this.on("change", _updateModel, this);
   },
 
   _modelChanged: function(snap) {
     this.set(snap.val());
+  },
+
+  _log: function(msg) {
+    if (console && console.log) {
+      console.log(msg);
+    }
   }
   
 });
