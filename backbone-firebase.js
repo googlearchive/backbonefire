@@ -288,9 +288,12 @@ Backbone.Firebase.Model = Backbone.Model.extend({
   },
 
   destroy: function(options) {
-    // TODO: Implement success and error callbacks.
+    // TODO: Fix naive success callback. Add error callback.
     this.firebase.set(null);
     this.trigger('destroy', this, this.collection, options);
+    if (options.success) {
+      options.success(this,null,options);
+    }
   },
 
   constructor: function(model, options) {
