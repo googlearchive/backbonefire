@@ -333,12 +333,14 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     // Unset attributes that have been deleted from the server
     // by comparing the keys that have been removed.
     var newModel = snap.val();
-    var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
-    var _this = this;
-    _.each(diff, function(key) {
-      _this.unset(key);
-    });
-    this.set(snap.val());
+    if (typeof newModel === "object" && newModel !== null) {
+      var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
+      var _this = this;
+      _.each(diff, function(key) {
+        _this.unset(key);
+      });
+    }
+    this.set(newModel);
     this.trigger('sync', this, null, null);
   },
 
