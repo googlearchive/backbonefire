@@ -289,7 +289,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
   destroy: function(options) {
     // TODO: Fix naive success callback. Add error callback.
-    this.firebase.set(null);
+    this.firebase.set(null, this._log);
     this.trigger('destroy', this, this.collection, options);
     if (options.success) {
       options.success(this,null,options);
@@ -317,11 +317,11 @@ Backbone.Firebase.Model = Backbone.Model.extend({
   },
 
   _updateModel: function(model, options) {
-      this.firebase.update(model.toJSON());
+      this.firebase.update(model.toJSON(), this._log);
   },
 
   _modelChanged: function(snap) {
-    this.set(snap.val());
+    this.set(snap.val(), {silent:true});
     this.trigger('sync', this, null, null);
   },
 
