@@ -156,6 +156,10 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   constructor: function(models, options) {
+
+    // Apply parent constructor (this will also call initialize).
+    Backbone.Collection.apply(this, arguments);
+
     if (options && options.firebase) {
       this.firebase = options.firebase;
     }
@@ -165,9 +169,6 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       case "function": this.firebase = this.firebase(); break;
       default: throw new Error("Invalid firebase reference created");
     }
-
-    // Apply parent constructor (this will also call initialize).
-    Backbone.Collection.apply(this, arguments);
 
     // Add handlers for remote events.
     this.firebase.on("child_added", this._childAdded.bind(this));
@@ -298,6 +299,9 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
   constructor: function(model, options) {
 
+    // Apply parent constructor (this will also call initialize).
+    Backbone.Model.apply(this, arguments);
+
     if (options && options.firebase) {
       this.firebase = options.firebase;
     }
@@ -308,9 +312,6 @@ Backbone.Firebase.Model = Backbone.Model.extend({
       default: throw new Error("Invalid firebase reference created");
     }
 
-    // Apply parent constructor (this will also call initialize).
-    Backbone.Model.apply(this, arguments);
-
     // Add handlers for remote events.
     this.firebase.on("value", this._modelChanged.bind(this));
 
@@ -319,16 +320,24 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
   _updateModel: function(model, options) {
     // Find the deleted keys and set their values to null
-    // so Firebase properly deletes them
+    // so Firebase properly deletes them.
     var modelObj = model.toJSON();
     _.each(model.changed, function(value, key) {
-      if (value == undefined)
+      if (typeof value === "undefined" || value === null)
         modelObj[key] = null;
     });
     this.firebase.update(modelObj, this._log);
   },
 
   _modelChanged: function(snap) {
+    // Unset attributes that have been deleted from the server
+    // by comparing the keys that have been removed.
+    var newModel = snap.val();
+    var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
+    var _this = this;
+    _.each(diff, function(key) {
+      _this.unset(key);
+    });
     this.set(snap.val());
     this.trigger('sync', this, null, null);
   },
