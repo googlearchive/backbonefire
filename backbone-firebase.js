@@ -298,10 +298,6 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
   constructor: function(model, options) {
 
-    // Save the keys from the last model so we
-    // can find out which keys have been deleted.
-    this._prevKeys = [];
-
     if (options && options.firebase) {
       this.firebase = options.firebase;
     }
@@ -324,19 +320,16 @@ Backbone.Firebase.Model = Backbone.Model.extend({
   _updateModel: function(model, options) {
     // Find the deleted keys and set their values to null
     // so Firebase properly deletes them
-    var modelJSON, currentKeys, deletedKeys;
-    modelObj = model.toJSON()
-    currentKeys = _.keys(modelObj)
-    deletedKeys = _.difference(this._prevKeys, currentKeys)
-    _.each(deletedKeys, function(key) {
-      modelObj[key] = null;
+    var modelObj = model.toJSON();
+    _.each(model.changed, function(value, key) {
+      if (value == undefined)
+        modelObj[key] = null;
     });
     this.firebase.update(modelObj, this._log);
   },
 
   _modelChanged: function(snap) {
     this.set(snap.val());
-    this._prevKeys = _.keys(snap.val());
     this.trigger('sync', this, null, null);
   },
 
