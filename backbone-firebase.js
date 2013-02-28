@@ -343,6 +343,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
   },
 
   _log: function(msg) {
+    if (typeof msg === "undefined" || msg === null) return;
     if (console && console.log) {
       console.log(msg);
     }
