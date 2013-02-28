@@ -322,6 +322,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
   _modelChanged: function(snap) {
     this.set(snap.val());
+    this.trigger('sync', this, null, null);
   },
 
   _log: function(msg) {
