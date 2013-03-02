@@ -97,7 +97,7 @@ _.extend(Backbone.Firebase.prototype, {
     });
   },
 
-  delete: function(model, cb) {
+  'delete': function(model, cb) {
     this._fbref.child(model.id).remove(function(err) {
       if (!err) {
         cb(null, model);
