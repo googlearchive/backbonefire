@@ -255,9 +255,12 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   _childAdded: function(snap) {
-    var model_id = snap.name(),
-      final_val = _.extend({id: model_id}, snap.val());
-    Backbone.Collection.prototype.add.apply(this, [final_val]);
+    var model = snap.val();
+    // If a node was added without Backfire, it may not have an ID.
+    if (!model.id) {
+      model.id = snap.name();
+    }
+    Backbone.Collection.prototype.add.apply(this, [model]);
   },
 
   _childMoved: function(snap) {
