@@ -46,7 +46,7 @@ for an example of how to use this special collection object.
 ### METHOD 2: Backbone.sync
 
 The bindings also override `Backbone.sync` to use Firebase. You may consider
-this option if you want to maintain an explicit seperation between _local_ and
+this option if you want to maintain an explicit separation between _local_ and
 _remote_ data.
 
 This adapter works very similarly to the
