@@ -255,7 +255,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   _childAdded: function(snap) {
-    Backbone.Collection.prototype.add.apply(this, [snap.val()]);
+    var model_id = snap.name(),
+      final_val = _.extend({id: model_id}, snap.val());
+    Backbone.Collection.prototype.add.apply(this, [final_val]);
   },
 
   _childMoved: function(snap) {
