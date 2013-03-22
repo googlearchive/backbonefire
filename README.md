@@ -11,8 +11,10 @@ Usage
 -----
 Include both firebase.js and backbone-firebase.js in your application.
 
-    <script src="https://cdn.firebase.com/v0/firebase.js"></script>
-    <script src="backbone-firebase.js"></script>
+```html
+<script src="https://cdn.firebase.com/v0/firebase.js"></script>
+<script src="backbone-firebase.js"></script>
+```
 
 There are two primary ways to use the bindings:
 
@@ -22,10 +24,12 @@ You will have access to a new object, `Backbone.Firebase.Collection`. You
 may extend this object, and must provide a Firebase URL or Firebase reference as the
 `firebase` property. For example:
 
-    var TodoList = Backbone.Firebase.Collection.extend({
-      model: Todo,
-      firebase: "https://<your-firebase>.firebaseio.com"
-    });
+```js
+var TodoList = Backbone.Firebase.Collection.extend({
+  model: Todo,
+  firebase: "https://<your-firebase>.firebaseio.com"
+});
+```
 
 Any models added to the collection will be synchronized to the provided
 Firebase. Any other clients using the Backbone binding will also receive
@@ -40,7 +44,7 @@ You should add and remove your models to the collection as your normally would,
 (via `add` and `remove`) and _remote_ data will be instantly updated.
 Subsequently, the same events will fire on all your other clients immediately.
 
-Please see [todos.js](https://github.com/firebase/backfire/blob/master/todos.js)
+Please see [todos.js](https://github.com/firebase/backfire/blob/gh-pages/todos.js)
 for an example of how to use this special collection object.
 
 ### METHOD 2: Backbone.sync
@@ -56,16 +60,18 @@ in your Model or Collection, and that object will be persisted at that location.
 
 For example:
 
-    var TodoList = Backbone.Collection.extend({
-      model: Todo,
-      firebase: new Backbone.Firebase("https://<your-namespace>.firebaseio.com")
-    });
+```js
+var TodoList = Backbone.Collection.extend({
+  model: Todo,
+  firebase: new Backbone.Firebase("https://<your-namespace>.firebaseio.com")
+});
+```
 
 will ensure that any calls to `fetch` or `sync` on the collection will update
 the provided Firebase with the appropriate data. The same is true for the
 `save` and `destroy` methods on a model.
 
-Please see [todos-sync.js](https://github.com/firebase/backfire/blob/master/todos-sync.js)
+Please see [todos-sync.js](https://github.com/firebase/backfire/blob/gh-pages/todos-sync.js)
 for an example of how to use this feature.
 
 License
