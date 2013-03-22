@@ -62,8 +62,8 @@ _.extend(Backbone.Firebase.prototype, {
       model.id = this._fbref.push().name();
     }
     var val = model.toJSON();
-    this._fbref.child(model.id).set(val, _.bind(function(success) {
-      if (success) {
+    this._fbref.child(model.id).set(val, _.bind(function(err) {
+      if (!err) {
         cb(null, val);
       } else {
         cb("Could not create model " + model.id);
@@ -88,8 +88,8 @@ _.extend(Backbone.Firebase.prototype, {
 
   update: function(model, cb) {
     var val = model.toJSON();
-    this._fbref.child(model.id).update(val, function(success) {
-      if (success) {
+    this._fbref.child(model.id).update(val, function(err) {
+      if (!err) {
         cb(null, val);
       } else {
         cb("Could not update model " + model.id, null);
@@ -98,8 +98,8 @@ _.extend(Backbone.Firebase.prototype, {
   },
 
   delete: function(model, cb) {
-    this._fbref.child(model.id).remove(function(success) {
-      if (success) {
+    this._fbref.child(model.id).remove(function(err) {
+      if (!err) {
         cb(null, model);
       } else {
         cb("Could not delete model " + model.id);
