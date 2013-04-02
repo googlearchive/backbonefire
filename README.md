@@ -1,6 +1,6 @@
 BackFire
 ========
-BackFire is a set of Backbone bindings for [Firebase](http://www.firebase.com).
+BackFire is a set of Backbone bindings for [Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire).
 The bindings let you use a special Collection type that will automatically
 synchronize all models contained within it to Firebase, without the need
 to make explicit calls to save or sync.
