@@ -142,7 +142,7 @@ Backbone.sync = function(method, model, options, error) {
   if (model.firebase || (model.collection && model.collection.firebase)) {
     syncMethod = Backbone.Firebase.sync;
   }
-	return syncMethod.apply(this, [method, model, options, error]);
+  return syncMethod.apply(this, [method, model, options, error]);
 };
 
 // Custom Firebase Collection.
@@ -156,23 +156,25 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   constructor: function(models, options) {
+
+    // Apply parent constructor (this will also call initialize).
+    Backbone.Collection.apply(this, arguments);
+
     if (options && options.firebase) {
       this.firebase = options.firebase;
     }
     switch (typeof this.firebase) {
       case "object": break;
       case "string": this.firebase = new Firebase(this.firebase); break;
+      case "function": this.firebase = this.firebase(); break;
       default: throw new Error("Invalid firebase reference created");
     }
-    
+
     // Add handlers for remote events.
     this.firebase.on("child_added", this._childAdded.bind(this));
     this.firebase.on("child_moved", this._childMoved.bind(this));
     this.firebase.on("child_changed", this._childChanged.bind(this));
     this.firebase.on("child_removed", this._childRemoved.bind(this));
-
-    // Apply parent constructor (this will also call initialize).
-    Backbone.Collection.apply(this, arguments);
 
     // Add handlers for all models in this collection, and any future ones
     // that may be added.
@@ -280,5 +282,75 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   }
 });
 
-})();
+// Custom Firebase Model.
+Backbone.Firebase.Model = Backbone.Model.extend({
+  save: function() {
+    this._log("Save called on a Firebase model, ignoring.");
+  },
 
+  destroy: function(options) {
+    // TODO: Fix naive success callback. Add error callback.
+    this.firebase.set(null, this._log);
+    this.trigger('destroy', this, this.collection, options);
+    if (options.success) {
+      options.success(this,null,options);
+    }
+  },
+
+  constructor: function(model, options) {
+
+    // Apply parent constructor (this will also call initialize).
+    Backbone.Model.apply(this, arguments);
+
+    if (options && options.firebase) {
+      this.firebase = options.firebase;
+    }
+    switch (typeof this.firebase) {
+      case "object": break;
+      case "string": this.firebase = new Firebase(this.firebase); break;
+      case "function": this.firebase = this.firebase(); break;
+      default: throw new Error("Invalid firebase reference created");
+    }
+
+    // Add handlers for remote events.
+    this.firebase.on("value", this._modelChanged.bind(this));
+
+    this.on("change", this._updateModel, this);
+  },
+
+  _updateModel: function(model, options) {
+    // Find the deleted keys and set their values to null
+    // so Firebase properly deletes them.
+    var modelObj = model.toJSON();
+    _.each(model.changed, function(value, key) {
+      if (typeof value === "undefined" || value === null)
+        modelObj[key] = null;
+    });
+    this.firebase.update(modelObj, this._log);
+  },
+
+  _modelChanged: function(snap) {
+    // Unset attributes that have been deleted from the server
+    // by comparing the keys that have been removed.
+    var newModel = snap.val();
+    if (typeof newModel === "object" && newModel !== null) {
+      var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
+      var _this = this;
+      _.each(diff, function(key) {
+        _this.unset(key);
+      });
+    }
+    this.set(newModel);
+    this.trigger('sync', this, null, null);
+  },
+
+  _log: function(msg) {
+    if (typeof msg === "undefined" || msg === null) return;
+    if (console && console.log) {
+      console.log(msg);
+    }
+  }
+  
+});
+
+})();
