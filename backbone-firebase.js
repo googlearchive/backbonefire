@@ -8,13 +8,10 @@ var _ = this._;
 var Backbone = this.Backbone;
 
 Backbone.Firebase = function(ref) {
+  this._fbref = ref;
   this._children = [];
   if (typeof ref == "string") {
-    // The constructor accepts URIs.
     this._fbref = new Firebase(ref);
-  } else {
-    // and will accept FirebaseQuery objects too.
-    this._fbref = ref.ref();
   }
   _.bindAll(this);
   this._fbref.on("child_added", this._childAdded);
@@ -61,10 +58,10 @@ _.extend(Backbone.Firebase.prototype, {
 
   create: function(model, cb) {
     if (!model.id) {
-      model.id = this._fbref.push().name();
+      model.id = this._fbref.ref().push().name();
     }
     var val = model.toJSON();
-    this._fbref.child(model.id).set(val, _.bind(function(err) {
+    this._fbref.ref().child(model.id).set(val, _.bind(function(err) {
       if (!err) {
         cb(null, val);
       } else {
@@ -90,7 +87,7 @@ _.extend(Backbone.Firebase.prototype, {
 
   update: function(model, cb) {
     var val = model.toJSON();
-    this._fbref.child(model.id).update(val, function(err) {
+    this._fbref.ref().child(model.id).update(val, function(err) {
       if (!err) {
         cb(null, val);
       } else {
@@ -100,7 +97,7 @@ _.extend(Backbone.Firebase.prototype, {
   },
 
   delete: function(model, cb) {
-    this._fbref.child(model.id).remove(function(err) {
+    this._fbref.ref().child(model.id).remove(function(err) {
       if (!err) {
         cb(null, model);
       } else {
@@ -176,7 +173,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       this.firebase = options.firebase;
     }
     switch (typeof this.firebase) {
-      case "object": this.firebase = this.firebase.ref(); break;
+      case "object": break;
       case "string": this.firebase = new Firebase(this.firebase); break;
       case "function": this.firebase = this.firebase(); break;
       default: throw new Error("Invalid firebase reference created");
@@ -191,7 +188,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     // Add handlers for all models in this collection, and any future ones
     // that may be added.
     function _updateModel(model, options) {
-      this.firebase.child(model.id).update(model.toJSON());
+      this.firebase.ref().child(model.id).update(model.toJSON());
     }
     function _unUpdateModel(model) {
       model.off("change", _updateModel, this);
@@ -215,7 +212,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     var parsed = this._parseModels(models);
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.child(model.id).set(model);
+      this.firebase.ref().child(model.id).set(model);
     }
     // TODO: Implement options.success
   },
@@ -224,7 +221,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     var parsed = this._parseModels(models);
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.child(model.id).set(null);
+      this.firebase.ref().child(model.id).set(null);
     }
     // TODO: Implement options.success
   },
@@ -258,7 +255,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     for (var i = 0; i < models.length; i++) {
       var model = models[i];
       if (!model.id) {
-        model.id = this.firebase.push().name();
+        model.id = this.firebase.ref().push().name();
       }
       if (model.toJSON && typeof model.toJSON == "function") {
         model = model.toJSON();
@@ -302,7 +299,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
   destroy: function(options) {
     // TODO: Fix naive success callback. Add error callback.
-    this.firebase.set(null, this._log);
+    this.firebase.ref().set(null, this._log);
     this.trigger('destroy', this, this.collection, options);
     if (options.success) {
       options.success(this,null,options);
@@ -318,7 +315,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
       this.firebase = options.firebase;
     }
     switch (typeof this.firebase) {
-      case "object": this.firebase = this.firebase.ref(); break;
+      case "object": break;
       case "string": this.firebase = new Firebase(this.firebase); break;
       case "function": this.firebase = this.firebase(); break;
       default: throw new Error("Invalid firebase reference created");
@@ -338,7 +335,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
       if (typeof value === "undefined" || value === null)
         modelObj[key] = null;
     });
-    this.firebase.update(modelObj, this._log);
+    this.firebase.ref().update(modelObj, this._log);
   },
 
   _modelChanged: function(snap) {
