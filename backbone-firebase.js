@@ -8,12 +8,14 @@ var _ = this._;
 var Backbone = this.Backbone;
 
 Backbone.Firebase = function(ref) {
-  this._fbref = ref;
   this._children = [];
   if (typeof ref == "string") {
+    // The constructor accepts URIs.
     this._fbref = new Firebase(ref);
+  } else {
+    // and will accept FirebaseQuery objects too.
+    this._fbref = ref.ref();
   }
-
   _.bindAll(this);
   this._fbref.on("child_added", this._childAdded);
   this._fbref.on("child_moved", this._childMoved);
@@ -174,7 +176,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       this.firebase = options.firebase;
     }
     switch (typeof this.firebase) {
-      case "object": break;
+      case "object": this.firebase = this.firebase.ref(); break;
       case "string": this.firebase = new Firebase(this.firebase); break;
       case "function": this.firebase = this.firebase(); break;
       default: throw new Error("Invalid firebase reference created");
@@ -316,7 +318,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
       this.firebase = options.firebase;
     }
     switch (typeof this.firebase) {
-      case "object": break;
+      case "object": this.firebase = this.firebase.ref(); break;
       case "string": this.firebase = new Firebase(this.firebase); break;
       case "function": this.firebase = this.firebase(); break;
       default: throw new Error("Invalid firebase reference created");
