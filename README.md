@@ -22,13 +22,22 @@ There are two primary ways to use the bindings:
 ### METHOD 1: Backbone.Firebase.Collection
 
 You will have access to a new object, `Backbone.Firebase.Collection`. You
-may extend this object, and must provide a Firebase URL or Firebase reference as the
-`firebase` property. For example:
+may extend this object, and must provide a Firebase URL or a Firebase reference
+as the `firebase` property. For example:
 
 ```js
 var TodoList = Backbone.Firebase.Collection.extend({
   model: Todo,
   firebase: "https://<your-firebase>.firebaseio.com"
+});
+```
+
+You may also apply a `limit` or some other [query](https://www.firebase.com/docs/queries.html)
+on a reference and pass it in:
+
+```js
+var Messages = Backbone.Firebase.Collection.extend({
+  firebase: new Firebase("https://<your-firebase>.firebaseio.com").limit(10)
 });
 ```
 
