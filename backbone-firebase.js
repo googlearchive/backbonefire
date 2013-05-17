@@ -180,10 +180,10 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     }
 
     // Add handlers for remote events.
-    this.firebase.on("child_added", this._childAdded.bind(this));
-    this.firebase.on("child_moved", this._childMoved.bind(this));
-    this.firebase.on("child_changed", this._childChanged.bind(this));
-    this.firebase.on("child_removed", this._childRemoved.bind(this));
+    this.firebase.on("child_added", _.bind(this._childAdded, this));
+    this.firebase.on("child_moved", _.bind(this._childMoved, this));
+    this.firebase.on("child_changed", _.bind(this._childChanged, this));
+    this.firebase.on("child_removed", _.bind(this._childRemoved, this));
 
     // Add handlers for all models in this collection, and any future ones
     // that may be added.
