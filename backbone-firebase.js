@@ -266,7 +266,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   _childAdded: function(snap) {
-    Backbone.Collection.prototype.add.apply(this, [snap.val()]);
+    var model = snap.val()
+    if (!model.id) model.id = snap.name()
+    Backbone.Collection.prototype.add.apply(this, [model]);
   },
 
   _childMoved: function(snap) {
@@ -276,6 +278,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
 
   _childChanged: function(snap) {
     var model = snap.val();
+    if (!model.id) model.id = snap.name()
     var item = _.find(this.models, function(child) {
       return child.id == model.id
     });
@@ -287,7 +290,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   _childRemoved: function(snap) {
-    Backbone.Collection.prototype.remove.apply(this, [snap.val()]);
+    var model = snap.val()
+    if (!model.id) model.id = snap.name()
+    Backbone.Collection.prototype.remove.apply(this, [model]);
   }
 });
 
