@@ -167,7 +167,7 @@ $(function(){
 
     // At initialization we bind to the relevant events on the `Todos`
     // collection, when items are added or changed. Kick things off by
-    // loading any preexisting todos that might be saved in *localStorage*.
+    // loading any preexisting todos that might be saved in *Firebase*.
     initialize: function() {
 
       this.input = this.$("#new-todo");
@@ -215,7 +215,7 @@ $(function(){
     },
 
     // If you hit return in the main input field, create new **Todo** model,
-    // persisting it to *localStorage*.
+    // persisting it to *Firebase*.
     createOnEnter: function(e) {
       if (e.keyCode != 13) return;
       if (!this.input.val()) return;
