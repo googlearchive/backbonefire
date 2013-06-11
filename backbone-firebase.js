@@ -286,6 +286,12 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       // TODO: Investigate: what is the right way to handle this case?
       throw new Error("Could not find model with ID " + model.id);
     }
+
+    var diff = _.difference(_.keys(item.attributes), _.keys(model));
+    _.each(diff, function(key) {
+      item.unset(key);
+    });
+
     item.set(model);
   },
 
