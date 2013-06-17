@@ -7,6 +7,64 @@
 var _ = this._;
 var Backbone = this.Backbone;
 
+Backbone.ModelFirebase = function(ref){
+  this._fbref = ref;
+  this._model = {};
+  this._hasModel = false;
+  if(typeof ref == "string"){
+    this._fbref = new Firebase(ref);
+  }
+  _.bindAll(this);
+  this._fbref.on("value", this._value);  
+};
+
+_.extend(Backbone.ModelFirebase.prototype, {
+  _value: function(snapshot){
+    var model = snapshot.val();
+    model.id = snapshot.name();
+    this._model = model;
+    this._hasModel = true;
+  },
+
+  create: function(model, cb){
+    //this doesn't actually happen, since the firebase node is already in existence when this object is created.
+    cb("Could not create model");
+  },
+
+  read: function(model, cb){
+    //are there any error cases for this?
+    if(this._hasModel){
+      _.defer(cb, null, this._model);
+    } else {
+      this._fbref.once("value", _.bind(function(snapshot){
+        this._value(snapshot);
+        _.defer(cb, null, this._model);
+      }, this))
+    }
+  },
+
+  update: function(model, cb){
+    var val = model.toJSON();
+    this._fbref.ref().update(val, function(err){
+      if(!err){
+        cb(null, model);
+      } else {
+        cb("Could not update model " + model.id);
+      }
+    });
+  },
+
+  'delete': function(model, cb){
+    this._fbref.ref().remove(function(err){
+      if(!err){
+        cb(null, model);
+      } else {
+        cb("Could not delete model " + model.id);
+      }
+    });
+  }
+});
+
 Backbone.Firebase = function(ref) {
   this._fbref = ref;
   this._children = [];
@@ -121,6 +179,10 @@ Backbone.Firebase.sync = function(method, model, options, error) {
 
   if (method == "read" && model.id == undefined) {
     method = "readAll";
+  }
+  
+  if(!store[method]){//it's a firebase object, hopefully
+    store = new Backbone.ModelFirebase(store);
   }
 
   store[method].apply(this, [model, function(err, val) {
