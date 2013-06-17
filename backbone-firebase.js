@@ -212,18 +212,16 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     var parsed = this._parseModels(models);
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.ref().child(model.id).set(model);
+      this.firebase.ref().child(model.id).set(model, _.bind(options.success, model));
     }
-    // TODO: Implement options.success
   },
 
   remove: function(models, options) {
     var parsed = this._parseModels(models);
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.ref().child(model.id).set(null);
+      this.firebase.ref().child(model.id).set(null, _.bind(options.success, model));
     }
-    // TODO: Implement options.success
   },
 
   create: function(model, options) {
