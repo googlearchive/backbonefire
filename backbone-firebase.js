@@ -180,10 +180,6 @@ Backbone.Firebase.sync = function(method, model, options, error) {
   if (method == "read" && model.id == undefined) {
     method = "readAll";
   }
-  
-  if(!store[method]){//it's a firebase object, hopefully
-    store = new Backbone.ModelFirebase(store);
-  }
 
   store[method].apply(this, [model, function(err, val) {
     if (err) {
