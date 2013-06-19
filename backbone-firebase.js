@@ -210,6 +210,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
 
   add: function(models, options) {
     var parsed = this._parseModels(models);
+    options = options ? _.clone(options) : {};
+    options.success = _.isFunction(options.success) ? options.success : function() {};
+
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
       this.firebase.ref().child(model.id).set(model, _.bind(options.success, model));
@@ -218,6 +221,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
 
   remove: function(models, options) {
     var parsed = this._parseModels(models);
+    options = options ? _.clone(options) : {};
+    options.success = _.isFunction(options.success) ? options.success : function() {};
+
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
       this.firebase.ref().child(model.id).set(null, _.bind(options.success, model));
