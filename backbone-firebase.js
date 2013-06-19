@@ -7,75 +7,32 @@
 var _ = this._;
 var Backbone = this.Backbone;
 
-Backbone.ModelFirebase = function(ref){
-  this._fbref = ref;
-  this._model = {};
-  this._hasModel = false;
-  if(typeof ref == "string"){
-    this._fbref = new Firebase(ref);
-  }
-  _.bindAll(this);
-  this._fbref.on("value", this._value);  
-};
-
-_.extend(Backbone.ModelFirebase.prototype, {
-  _value: function(snapshot){
-    var model = snapshot.val();
-    model.id = snapshot.name();
-    this._model = model;
-    this._hasModel = true;
-    while(this._pending.length != 0){
-      _.defer(this._pending.shift(), null, this._model);
-    }
-  },
-
-  create: function(model, cb){
-    //this doesn't actually happen, since the firebase node is already in existence when this object is created.
-    cb("Could not create model");
-  },
-
-  read: function(model, cb){
-    //are there any error cases for this?
-    if(this._hasModel){
-      _.defer(cb, null, this._model);
-    } else {
-      this._pending.push(cb);
-    }
-  },
-
-  update: function(model, cb){
-    var val = model.toJSON();
-    this._fbref.ref().update(val, function(err){
-      if(!err){
-        cb(null, model);
-      } else {
-        cb("Could not update model " + model.id);
-      }
-    });
-  },
-
-  'delete': function(model, cb){
-    this._fbref.ref().remove(function(err){
-      if(!err){
-        cb(null, model);
-      } else {
-        cb("Could not delete model " + model.id);
-      }
-    });
-  }
-});
-
-Backbone.Firebase = function(ref) {
+Backbone.Firebase = function(ref, isModel) {
   this._fbref = ref;
   this._children = [];
+  this._model = {};
+  this._pending = [];
+  this._hasModel = false;
   if (typeof ref == "string") {
     this._fbref = new Firebase(ref);
   }
   _.bindAll(this);
-  this._fbref.on("child_added", this._childAdded);
-  this._fbref.on("child_moved", this._childMoved);
-  this._fbref.on("child_changed", this._childChanged);
-  this._fbref.on("child_removed", this._childRemoved);
+
+  if(isModel){
+    this._fbref.on("value", this._value);
+
+    //if we're a model, just set our public functions to the functions for use when we're a model
+    this.create = this._create;
+    this.read = this._read;
+    this.readAll = null;
+    this.update = this._update;
+    this.delete = this._delete;
+  } else {
+    this._fbref.on("child_added", this._childAdded);
+    this._fbref.on("child_moved", this._childMoved);
+    this._fbref.on("child_changed", this._childChanged);
+    this._fbref.on("child_removed", this._childRemoved);
+  }
 };
 
 _.extend(Backbone.Firebase.prototype, {
@@ -113,7 +70,17 @@ _.extend(Backbone.Firebase.prototype, {
       return child.id == model.id
     });
   },
+  _value: function(snapshot){
+    var model = snapshot.val();
+    model.id = snapshot.name();
+    this._model = model;
+    this._hasModel = true;
+    while(this._pending.length != 0){
+      _.defer(this._pending.shift(), null, this._model);
+    }
+  },
 
+  //Treat it as a collection
   create: function(model, cb) {
     if (!model.id) {
       model.id = this._fbref.ref().push().name();
@@ -157,6 +124,42 @@ _.extend(Backbone.Firebase.prototype, {
   'delete': function(model, cb) {
     this._fbref.ref().child(model.id).remove(function(err) {
       if (!err) {
+        cb(null, model);
+      } else {
+        cb("Could not delete model " + model.id);
+      }
+    });
+  },
+
+  //Treat it as an individual item
+  _create: function(model, cb){
+    //this doesn't actually happen, since the firebase node is already in existence when this object is created.
+    cb("Could not create model");
+  },
+
+  _read: function(model, cb){
+    //are there any error cases for this?
+    if(this._hasModel){
+      _.defer(cb, null, this._model);
+    } else {
+      this._pending.push(cb);
+    }
+  },
+
+  _update: function(model, cb){
+    var val = model.toJSON();
+    this._fbref.ref().update(val, function(err){
+      if(!err){
+        cb(null, model);
+      } else {
+        cb("Could not update model " + model.id);
+      }
+    });
+  },
+
+  _delete: function(model, cb){
+    this._fbref.ref().remove(function(err){
+      if(!err){
         cb(null, model);
       } else {
         cb("Could not delete model " + model.id);
