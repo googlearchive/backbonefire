@@ -26,7 +26,7 @@ Backbone.Firebase = function(ref, isModel) {
     this.read = this._read;
     this.readAll = null;
     this.update = this._update;
-    this.delete = this._delete;
+    this.['delete'] = this._delete;
   } else {
     this._fbref.on("child_added", this._childAdded);
     this._fbref.on("child_moved", this._childMoved);
