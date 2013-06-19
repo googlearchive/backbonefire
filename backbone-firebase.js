@@ -24,6 +24,9 @@ _.extend(Backbone.ModelFirebase.prototype, {
     model.id = snapshot.name();
     this._model = model;
     this._hasModel = true;
+    while(this._pending.length != 0){
+      _.defer(this._pending.shift(), null, this._model);
+    }
   },
 
   create: function(model, cb){
@@ -36,10 +39,7 @@ _.extend(Backbone.ModelFirebase.prototype, {
     if(this._hasModel){
       _.defer(cb, null, this._model);
     } else {
-      this._fbref.once("value", _.bind(function(snapshot){
-        this._value(snapshot);
-        _.defer(cb, null, this._model);
-      }, this))
+      this._pending.push(cb);
     }
   },
 
