@@ -188,7 +188,10 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     // Add handlers for all models in this collection, and any future ones
     // that may be added.
     function _updateModel(model, options) {
-      this.firebase.ref().child(model.id).update(model.toJSON());
+      // If this change is a result of a Firebase push, don't try to re-update Firebase 
+      if (!options.fromFirebase) {
+        this.firebase.ref().child(model.id).update(model.changedAttributes());
+      }
     }
     function _unUpdateModel(model) {
       model.off("change", _updateModel, this);
@@ -296,7 +299,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       item.unset(key);
     });
 
-    item.set(model);
+    item.set(model, {fromFirebase: true});
   },
 
   _childRemoved: function(snap) {
