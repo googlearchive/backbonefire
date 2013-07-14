@@ -13,11 +13,11 @@ Backbone.Firebase = function(ref) {
   if (typeof ref == "string") {
     this._fbref = new Firebase(ref);
   }
-  _.bindAll(this);
-  this._fbref.on("child_added", this._childAdded);
-  this._fbref.on("child_moved", this._childMoved);
-  this._fbref.on("child_changed", this._childChanged);
-  this._fbref.on("child_removed", this._childRemoved);
+
+  this._fbref.on("child_added", this._childAdded, this);
+  this._fbref.on("child_moved", this._childMoved, this);
+  this._fbref.on("child_changed", this._childChanged, this);
+  this._fbref.on("child_removed", this._childRemoved, this);
 };
 
 _.extend(Backbone.Firebase.prototype, {
