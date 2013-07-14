@@ -123,17 +123,17 @@ Backbone.Firebase.sync = function(method, model, options, error) {
     method = "readAll";
   }
 
-  store[method].apply(this, [model, function(err, val) {
+  store[method].apply(store, [model, function(err, val) {
     if (err) {
       model.trigger("error", model, err, options);
-      if (Backbone.VERSION === "0.9.10") { 
+      if (Backbone.VERSION === "0.9.10") {
         options.error(model, err, options);
       } else {
         options.error(err);
       }
     } else {
       model.trigger("sync", model, val, options);
-      if (Backbone.VERSION === "0.9.10") { 
+      if (Backbone.VERSION === "0.9.10") {
         options.success(model, val, options);
       } else {
         options.success(val);
