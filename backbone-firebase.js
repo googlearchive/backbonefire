@@ -190,18 +190,8 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     function _updateModel(model, options) {
       this.firebase.ref().child(model.id).update(model.toJSON());
     }
-    function _unUpdateModel(model) {
-      model.off("change", _updateModel, this);
-    }
 
-    for (var i = 0; i < this.models.length; i++) {
-      this.models[i].on("change", _updateModel, this);
-      this.models[i].once("remove", _unUpdateModel, this);
-    }
-    this.on("add", function(model) {
-      model.on("change", _updateModel, this);
-      model.once("remove", _unUpdateModel, this);
-    }, this);
+    this.listenTo(this, 'change', _updateModel, this);
   },
 
   comparator: function(model) {
