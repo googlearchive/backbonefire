@@ -339,7 +339,14 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     // Add handlers for remote events.
     this.firebase.on("value", this._modelChanged.bind(this));
 
-    this.on("change", this._updateModel, this);
+    this._listenLocalChange(true);
+  },
+  
+  _listenLocalChange: function(state) {
+    if (state)
+      this.on("change", this._updateModel, this);
+    else 
+      this.off("change", this._updateModel, this);
   },
 
   _updateModel: function(model, options) {
@@ -348,9 +355,13 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     var modelObj = model.toJSON();
     _.each(model.changed, function(value, key) {
       if (typeof value === "undefined" || value === null)
-        modelObj[key] = null;
+        if (key == "id")
+          delete modelObj[key];
+        else
+          modelObj[key] = null;
     });
-    this.firebase.ref().update(modelObj, this._log);
+    if (_.size(modelObj))
+      this.firebase.ref().update(modelObj, this._log);
   },
 
   _modelChanged: function(snap) {
@@ -361,11 +372,13 @@ Backbone.Firebase.Model = Backbone.Model.extend({
       var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
       var _this = this;
       _.each(diff, function(key) {
-        _this.unset(key);
+          _this.unset(key);
       });
     }
+    this._listenLocalChange(false);
     this.set(newModel);
     this.trigger('sync', this, null, null);
+    this._listenLocalChange(true);
   },
 
   _log: function(msg) {
