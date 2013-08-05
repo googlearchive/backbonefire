@@ -13,11 +13,11 @@ Backbone.Firebase = function(ref) {
   if (typeof ref == "string") {
     this._fbref = new Firebase(ref);
   }
-  _.bindAll(this);
-  this._fbref.on("child_added", this._childAdded);
-  this._fbref.on("child_moved", this._childMoved);
-  this._fbref.on("child_changed", this._childChanged);
-  this._fbref.on("child_removed", this._childRemoved);
+
+  this._fbref.on("child_added", this._childAdded, this);
+  this._fbref.on("child_moved", this._childMoved, this);
+  this._fbref.on("child_changed", this._childChanged, this);
+  this._fbref.on("child_removed", this._childRemoved, this);
 };
 
 _.extend(Backbone.Firebase.prototype, {
@@ -123,17 +123,17 @@ Backbone.Firebase.sync = function(method, model, options, error) {
     method = "readAll";
   }
 
-  store[method].apply(this, [model, function(err, val) {
+  store[method].apply(store, [model, function(err, val) {
     if (err) {
       model.trigger("error", model, err, options);
-      if (Backbone.VERSION === "0.9.10") { 
+      if (Backbone.VERSION === "0.9.10") {
         options.error(model, err, options);
       } else {
         options.error(err);
       }
     } else {
       model.trigger("sync", model, val, options);
-      if (Backbone.VERSION === "0.9.10") { 
+      if (Backbone.VERSION === "0.9.10") {
         options.success(model, val, options);
       } else {
         options.success(val);
@@ -190,18 +190,8 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     function _updateModel(model, options) {
       this.firebase.ref().child(model.id).update(model.toJSON());
     }
-    function _unUpdateModel(model) {
-      model.off("change", _updateModel, this);
-    }
 
-    for (var i = 0; i < this.models.length; i++) {
-      this.models[i].on("change", _updateModel, this);
-      this.models[i].once("remove", _unUpdateModel, this);
-    }
-    this.on("add", function(model) {
-      model.on("change", _updateModel, this);
-      model.once("remove", _unUpdateModel, this);
-    }, this);
+    this.listenTo(this, 'change', _updateModel, this);
   },
 
   comparator: function(model) {
