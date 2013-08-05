@@ -185,22 +185,13 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     this.firebase.on("child_changed", _.bind(this._childChanged, this));
     this.firebase.on("child_removed", _.bind(this._childRemoved, this));
 
-    // Add handlers for all models in this collection, and any future ones
-    // that may be added.
-    function _updateModel(model, options) {
-      this.firebase.ref().child(model.id).update(model.toJSON());
-    }
-    function _unUpdateModel(model) {
-      model.off("change", _updateModel, this);
-    }
-
     for (var i = 0; i < this.models.length; i++) {
-      this.models[i].on("change", _updateModel, this);
-      this.models[i].once("remove", _unUpdateModel, this);
+      this.models[i].on("change", this._updateModel, this);
+      this.models[i].once("remove", this._unUpdateModel, this);
     }
     this.on("add", function(model) {
-      model.on("change", _updateModel, this);
-      model.once("remove", _unUpdateModel, this);
+      model.on("change", this._updateModel, this);
+      model.once("remove", this._unUpdateModel, this);
     }, this);
   },
 
@@ -295,14 +286,33 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     _.each(diff, function(key) {
       item.unset(key);
     });
-
+    
+    this._listenLocalChange(item, false);
     item.set(model);
+    this._listenLocalChange(item, true);
   },
 
   _childRemoved: function(snap) {
     var model = snap.val()
     if (!model.id) model.id = snap.name()
     Backbone.Collection.prototype.remove.apply(this, [model]);
+  },
+  
+  // Add handlers for all models in this collection, and any future ones
+  // that may be added.
+  _updateModel: function(model, options) {
+    this.firebase.ref().child(model.id).update(model.toJSON());
+  },
+  
+  _unUpdateModel: function(model) {
+    model.off("change", this._updateModel, this);
+  },
+
+  _listenLocalChange: function(model, state) {
+    if (state)
+      model.on("change", this._updateModel, this);
+    else 
+      this._unUpdateModel(model);
   }
 });
 
