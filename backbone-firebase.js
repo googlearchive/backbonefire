@@ -185,7 +185,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     this.firebase.on("child_changed", _.bind(this._childChanged, this));
     this.firebase.on("child_removed", _.bind(this._childRemoved, this));
 
-    this.listenTo(this, 'change', _updateModel, this);
+    this.listenTo(this, 'change', this._updateModel, this);
   },
 
   comparator: function(model) {
@@ -257,6 +257,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     var model = snap.val()
     if (!model.id) model.id = snap.name()
     Backbone.Collection.prototype.add.apply(this, [model]);
+    this.get(model.id)._remoteAttributes = model;
   },
 
   _childMoved: function(snap) {
@@ -275,14 +276,17 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
       throw new Error("Could not find model with ID " + model.id);
     }
 
+    this._preventSync(item, true);
+    item._remoteAttributes = model;
+
     var diff = _.difference(_.keys(item.attributes), _.keys(model));
     _.each(diff, function(key) {
       item.unset(key);
     });
     
-    this._listenLocalChange(item, false);
     item.set(model);
-    this._listenLocalChange(item, true);
+    
+    this._preventSync(item, false);
   },
 
   _childRemoved: function(snap) {
@@ -294,15 +298,30 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   // Add handlers for all models in this collection, and any future ones
   // that may be added.
   _updateModel: function(model, options) {
-    this.firebase.ref().child(model.id).update(model.toJSON());
+  
+    if (model._remoteChanging) return;
+    
+    var remoteAttributes = model._remoteAttributes || {};
+    var localAttributes = model.toJSON();
+    var updateAttributes = {};
+    
+    _.each(_.union(_.keys(remoteAttributes),_.keys(localAttributes)), function(key) {
+      if (!_.has(localAttributes, key)) {
+        updateAttributes[key] = null;
+      }
+      else if (localAttributes[key] != remoteAttributes[key]) {
+        updateAttributes[key] = localAttributes[key];
+      }
+    });
+    
+    if (_.size(updateAttributes)) {
+      this.firebase.ref().child(model.id).update(updateAttributes);
+    }
   },
   
-  _listenLocalChange: function(model, state) {
-    if (state)
-      model.on("change", this._updateModel, this);
-    else 
-      model.off("change", this._updateModel, this);
-  }
+  _preventSync: function(model, state) {
+    model._remoteChanging = state;
+  }  
 });
 
 // Custom Firebase Model.
