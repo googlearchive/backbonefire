@@ -255,7 +255,10 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
 
   _childAdded: function(snap) {
     var model = snap.val()
-    if (!model.id) model.id = snap.name()
+    if (!model.id) {
+      if (!_.isObject(model)) model = {};
+      model.id = snap.name()
+    }
     Backbone.Collection.prototype.add.apply(this, [model]);
     this.get(model.id)._remoteAttributes = model;
   },
