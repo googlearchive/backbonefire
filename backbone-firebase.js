@@ -248,11 +248,16 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     models = _.isArray(models) ? models.slice() : [models];
     for (var i = 0; i < models.length; i++) {
       var model = models[i];
+      var backboneModel;
       if (model.toJSON && typeof model.toJSON == "function") {
+        backboneModel = model;
         model = model.toJSON();
       }
       if (!model.id) {
         model.id = this.firebase.ref().push().name();
+        if (backboneModel) {
+          backboneModel.set({id: model.id},{silent: true});
+        }
       }
       ret.push(model);
     }
