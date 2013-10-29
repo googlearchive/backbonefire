@@ -175,7 +175,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     switch (typeof this.firebase) {
       case "object": break;
       case "string": this.firebase = new Firebase(this.firebase); break;
-      case "function": this.firebase = this.firebase(); break;
+      case "function": this.firebase = this.firebase(options); break;
       default: throw new Error("Invalid firebase reference created");
     }
 
