@@ -344,6 +344,15 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
   constructor: function(model, options) {
 
+    // Store defaults so they don't get applied immediately.
+    var defaults = _.result(this, 'defaults');
+    this.defaults = null;
+
+    // Apply defaults only after first sync.
+    this.once('sync', function() {
+      this.set(_.defaults(this.toJSON(), defaults));
+    });
+
     // Apply parent constructor (this will also call initialize).
     Backbone.Model.apply(this, arguments);
 
