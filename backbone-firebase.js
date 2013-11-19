@@ -286,9 +286,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     _.each(diff, function(key) {
       item.unset(key);
     });
-    
+
     item.set(model);
-    
+
     this._preventSync(item, false);
   },
 
@@ -297,17 +297,17 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     if (!model.id) model.id = snap.name()
     Backbone.Collection.prototype.remove.apply(this, [model]);
   },
-  
+
   // Add handlers for all models in this collection, and any future ones
   // that may be added.
   _updateModel: function(model, options) {
-  
+
     if (model._remoteChanging) return;
-    
+
     var remoteAttributes = model._remoteAttributes || {};
     var localAttributes = model.toJSON();
     var updateAttributes = {};
-    
+
     _.each(_.union(_.keys(remoteAttributes),_.keys(localAttributes)), function(key) {
       if (!_.has(localAttributes, key)) {
         updateAttributes[key] = null;
@@ -316,15 +316,15 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
         updateAttributes[key] = localAttributes[key];
       }
     });
-    
+
     if (_.size(updateAttributes)) {
       this.firebase.ref().child(model.id).update(updateAttributes);
     }
   },
-  
+
   _preventSync: function(model, state) {
     model._remoteChanging = state;
-  }  
+  }
 });
 
 // Custom Firebase Model.
@@ -371,11 +371,11 @@ Backbone.Firebase.Model = Backbone.Model.extend({
 
     this._listenLocalChange(true);
   },
-  
+
   _listenLocalChange: function(state) {
     if (state)
       this.on("change", this._updateModel, this);
-    else 
+    else
       this.off("change", this._updateModel, this);
   },
 
@@ -417,7 +417,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
       console.log(msg);
     }
   }
-  
+
 });
 
 })();
