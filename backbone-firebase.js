@@ -96,7 +96,7 @@ _.extend(Backbone.Firebase.prototype, {
     });
   },
 
-  'delete': function(model, cb) {
+  "delete": function(model, cb) {
     this._fbref.ref().child(model.id).remove(function(err) {
       if (!err) {
         cb(null, model);
@@ -112,7 +112,7 @@ Backbone.Firebase.sync = function(method, model, options, error) {
   var store = model.firebase || model.collection.firebase;
 
   // Backwards compatibility with Backbone <= 0.3.3
-  if (typeof options == 'function') {
+  if (typeof options == "function") {
     options = {
       success: options,
       error: error
@@ -144,8 +144,8 @@ Backbone.Firebase.sync = function(method, model, options, error) {
 
 Backbone.oldSync = Backbone.sync;
 
-// Override 'Backbone.sync' to default to Firebase sync.
-// the original 'Backbone.sync' is still available in 'Backbone.oldSync'
+// Override "Backbone.sync" to default to Firebase sync.
+// the original "Backbone.sync" is still available in "Backbone.oldSync"
 Backbone.sync = function(method, model, options, error) {
   var syncMethod = Backbone.oldSync;
   if (model.firebase || (model.collection && model.collection.firebase)) {
@@ -185,7 +185,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     this.firebase.on("child_changed", _.bind(this._childChanged, this));
     this.firebase.on("child_removed", _.bind(this._childRemoved, this));
 
-    this.listenTo(this, 'change', this._updateModel, this);
+    this.listenTo(this, "change", this._updateModel, this);
   },
 
   comparator: function(model) {
@@ -336,20 +336,18 @@ Backbone.Firebase.Model = Backbone.Model.extend({
   destroy: function(options) {
     // TODO: Fix naive success callback. Add error callback.
     this.firebase.ref().set(null, this._log);
-    this.trigger('destroy', this, this.collection, options);
+    this.trigger("destroy", this, this.collection, options);
     if (options.success) {
       options.success(this,null,options);
     }
   },
 
   constructor: function(model, options) {
-
     // Store defaults so they don't get applied immediately.
-    var defaults = _.result(this, 'defaults');
-    this.defaults = null;
+    var defaults = _.result(this, "defaults");
 
     // Apply defaults only after first sync.
-    this.once('sync', function() {
+    this.once("sync", function() {
       this.set(_.defaults(this.toJSON(), defaults));
     });
 
@@ -400,14 +398,14 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     var newModel = snap.val();
     if (typeof newModel === "object" && newModel !== null) {
       var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
-      var _this = this;
+      var self = this;
       _.each(diff, function(key) {
-          _this.unset(key);
+        self.unset(key);
       });
     }
     this._listenLocalChange(false);
     this.set(newModel);
-    this.trigger('sync', this, null, null);
+    this.trigger("sync", this, null, null);
     this._listenLocalChange(true);
   },
 
