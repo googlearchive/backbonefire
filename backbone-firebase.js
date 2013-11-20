@@ -380,7 +380,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
   _updateModel: function(model, options) {
     // Find the deleted keys and set their values to null
     // so Firebase properly deletes them.
-    var modelObj = model.toJSON();
+    var modelObj = model.changedAttributes();
     _.each(model.changed, function(value, key) {
       if (typeof value === "undefined" || value === null)
         if (key == "id")
