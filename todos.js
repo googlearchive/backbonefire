@@ -3,6 +3,8 @@
 // Firebase adapter to persist Backbone models.
 
 // Load the application once the DOM is ready, using `jQuery.ready`:
+var Todos;
+
 $(function(){
 
   // Todo Model
@@ -57,7 +59,7 @@ $(function(){
   });
 
   // Create our global collection of **Todos**.
-  var Todos = new TodoList;
+  Todos = new TodoList;
 
   // Todo Item View
   // --------------
@@ -192,6 +194,7 @@ $(function(){
 
     // Add all items in the **Todos** collection at once.
     addAll: function() {
+      this.$("#todo-list").html("");
       Todos.each(this.addOne, this);
     },
 

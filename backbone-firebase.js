@@ -193,6 +193,9 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     this.listenTo(this, "change", this._updateModel, this);
     // Listen for destroy event to remove models.
     this.listenTo(this, "destroy", this._removeModel, this);
+
+    // Don't suppress local events by default.
+    this._suppressEvent = false;
   },
 
   comparator: function(model) {
@@ -208,8 +211,13 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
       var childRef = this.firebase.ref().child(model.id);
+      if (options.silent === true) {
+        this._suppressEvent = true;
+      }
       childRef.set(model, _.bind(options.success, model));
     }
+
+    return parsed;
   },
 
   remove: function(models, options) {
@@ -221,8 +229,13 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
       var childRef = this.firebase.ref().child(model.id);
+      if (options.silent === true) {
+        this._suppressEvent = true;
+      }
       childRef.set(null, _.bind(options.success, model));
     }
+
+    return parsed;
   },
 
   create: function(model, options) {
@@ -239,6 +252,19 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     }
     this.add([model], options);
     return model;
+  },
+
+  reset: function(models, options) {
+    options || (options = {});
+    // Remove all models remotely.
+    this.remove(this.models, {silent: true});
+    // Add new models.
+    var ret = this.add(models, {silent: true});
+    // Trigger "reset" event.
+    if (!options.silent) {
+      this.trigger("reset", this, options);
+    }
+    return ret;
   },
 
   _log: function(msg) {
@@ -267,10 +293,17 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   _childAdded: function(snap) {
     var model = snap.val();
     if (!model.id) {
-      if (!_.isObject(model)) model = {};
+      if (!_.isObject(model)) {
+        model = {};
+      }
       model.id = snap.name();
     }
-    Backbone.Collection.prototype.add.apply(this, [model]);
+    if (this._suppressEvent === true) {
+      this._suppressEvent = false;
+      Backbone.Collection.prototype.add.apply(this, [model], {silent: true});
+    } else {
+      Backbone.Collection.prototype.add.apply(this, [model]);
+    }
     this.get(model.id)._remoteAttributes = model;
   },
 
@@ -311,7 +344,12 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     if (!model.id) {
       model.id = snap.name();
     }
-    Backbone.Collection.prototype.remove.apply(this, [model]);
+    if (this._suppressEvent === true) {
+      this._suppressEvent = false;
+      Backbone.Collection.prototype.remove.apply(this, [model], {silent: true});
+    } else {
+      Backbone.Collection.prototype.remove.apply(this, [model]);
+    }
   },
 
   // Add handlers for all models in this collection, and any future ones
@@ -341,6 +379,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
 
   // Triggered when model.destroy() is called on one of the children.
   _removeModel: function(model, collection, options) {
+    options = options ? _.clone(options) : {};
     options.success =
       _.isFunction(options.success) ? options.success : function() {};
     var childRef = this.firebase.ref().child(model.id);
