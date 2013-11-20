@@ -358,7 +358,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     }
 
     // Add handlers for remote events.
-    this.firebase.on("value", this._modelChanged.bind(this));
+    this.firebase.on("value", _.bind(this._modelChanged, this));
 
     this._listenLocalChange(true);
   },
