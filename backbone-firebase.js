@@ -21,7 +21,6 @@ Backbone.Firebase = function(ref) {
 };
 
 _.extend(Backbone.Firebase.prototype, {
-
   _childAdded: function(childSnap, prevChild) {
     var model = childSnap.val();
     model.id = childSnap.name();
@@ -34,6 +33,7 @@ _.extend(Backbone.Firebase.prototype, {
       this._children.unshift(model);
     }
   },
+
   _childMoved: function(childSnap, prevChild) {
     var model = childSnap.val();
     this._children = _.reject(this._children, function(child) {
@@ -41,6 +41,7 @@ _.extend(Backbone.Firebase.prototype, {
     });
     this._childAdded(childSnap, prevChild);
   },
+
   _childChanged: function(childSnap, prevChild) {
     var model = childSnap.val();
     model.id = childSnap.name();
@@ -49,6 +50,7 @@ _.extend(Backbone.Firebase.prototype, {
     });
     this._children[this._children.indexOf(item)] = model;
   },
+
   _childRemoved: function(oldChildSnap) {
     var model = oldChildSnap.val();
     this._children = _.reject(this._children, function(child) {
@@ -60,6 +62,7 @@ _.extend(Backbone.Firebase.prototype, {
     if (!model.id) {
       model.id = this._fbref.ref().push().name();
     }
+
     var val = model.toJSON();
     this._fbref.ref().child(model.id).set(val, _.bind(function(err) {
       if (!err) {
@@ -75,9 +78,11 @@ _.extend(Backbone.Firebase.prototype, {
       _.defer(cb, "Invalid model ID provided to read");
       return;
     }
+
     var index = _.find(this._children, function(child) {
       return child.id == model.id
     });
+
     _.defer(cb, null, this._children[index]);
   },
 
@@ -165,7 +170,6 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   constructor: function(models, options) {
-
     // Apply parent constructor (this will also call initialize).
     Backbone.Collection.apply(this, arguments);
 
@@ -185,7 +189,10 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     this.firebase.on("child_changed", _.bind(this._childChanged, this));
     this.firebase.on("child_removed", _.bind(this._childRemoved, this));
 
+    // Handle changes in any local models.
     this.listenTo(this, "change", this._updateModel, this);
+    // Listen for destroy event to remove models.
+    this.listenTo(this, "destroy", this._removeModel, this);
   },
 
   comparator: function(model) {
@@ -195,22 +202,26 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   add: function(models, options) {
     var parsed = this._parseModels(models);
     options = options ? _.clone(options) : {};
-    options.success = _.isFunction(options.success) ? options.success : function() {};
+    options.success =
+      _.isFunction(options.success) ? options.success : function() {};
 
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.ref().child(model.id).set(model, _.bind(options.success, model));
+      var childRef = this.firebase.ref().child(model.id);
+      childRef.set(model, _.bind(options.success, model));
     }
   },
 
   remove: function(models, options) {
     var parsed = this._parseModels(models);
     options = options ? _.clone(options) : {};
-    options.success = _.isFunction(options.success) ? options.success : function() {};
+    options.success =
+      _.isFunction(options.success) ? options.success : function() {};
 
     for (var i = 0; i < parsed.length; i++) {
       var model = parsed[i];
-      this.firebase.ref().child(model.id).set(null, _.bind(options.success, model));
+      var childRef = this.firebase.ref().child(model.id);
+      childRef.set(null, _.bind(options.success, model));
     }
   },
 
@@ -254,10 +265,10 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
   },
 
   _childAdded: function(snap) {
-    var model = snap.val()
+    var model = snap.val();
     if (!model.id) {
       if (!_.isObject(model)) model = {};
-      model.id = snap.name()
+      model.id = snap.name();
     }
     Backbone.Collection.prototype.add.apply(this, [model]);
     this.get(model.id)._remoteAttributes = model;
@@ -270,10 +281,14 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
 
   _childChanged: function(snap) {
     var model = snap.val();
-    if (!model.id) model.id = snap.name()
+    if (!model.id) {
+      model.id = snap.name();
+    }
+
     var item = _.find(this.models, function(child) {
       return child.id == model.id
     });
+
     if (!item) {
       // TODO: Investigate: what is the right way to handle this case?
       throw new Error("Could not find model with ID " + model.id);
@@ -288,31 +303,33 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     });
 
     item.set(model);
-
     this._preventSync(item, false);
   },
 
   _childRemoved: function(snap) {
-    var model = snap.val()
-    if (!model.id) model.id = snap.name()
+    var model = snap.val();
+    if (!model.id) {
+      model.id = snap.name();
+    }
     Backbone.Collection.prototype.remove.apply(this, [model]);
   },
 
   // Add handlers for all models in this collection, and any future ones
   // that may be added.
   _updateModel: function(model, options) {
-
-    if (model._remoteChanging) return;
+    if (model._remoteChanging) {
+      return;
+    }
 
     var remoteAttributes = model._remoteAttributes || {};
     var localAttributes = model.toJSON();
     var updateAttributes = {};
 
-    _.each(_.union(_.keys(remoteAttributes),_.keys(localAttributes)), function(key) {
+    var union = _.union(_.keys(remoteAttributes), _.keys(localAttributes));
+    _.each(union, function(key) {
       if (!_.has(localAttributes, key)) {
         updateAttributes[key] = null;
-      }
-      else if (localAttributes[key] != remoteAttributes[key]) {
+      } else if (localAttributes[key] != remoteAttributes[key]) {
         updateAttributes[key] = localAttributes[key];
       }
     });
@@ -320,6 +337,14 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     if (_.size(updateAttributes)) {
       this.firebase.ref().child(model.id).update(updateAttributes);
     }
+  },
+
+  // Triggered when model.destroy() is called on one of the children.
+  _removeModel: function(model, collection, options) {
+    options.success =
+      _.isFunction(options.success) ? options.success : function() {};
+    var childRef = this.firebase.ref().child(model.id);
+    childRef.set(null, _.bind(options.success, model));
   },
 
   _preventSync: function(model, state) {
@@ -338,7 +363,7 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     this.firebase.ref().set(null, this._log);
     this.trigger("destroy", this, this.collection, options);
     if (options.success) {
-      options.success(this,null,options);
+      options.success(this, null, options);
     }
   },
 
@@ -371,10 +396,11 @@ Backbone.Firebase.Model = Backbone.Model.extend({
   },
 
   _listenLocalChange: function(state) {
-    if (state)
+    if (state) {
       this.on("change", this._updateModel, this);
-    else
+    } else {
       this.off("change", this._updateModel, this);
+    }
   },
 
   _updateModel: function(model, options) {
@@ -382,14 +408,17 @@ Backbone.Firebase.Model = Backbone.Model.extend({
     // so Firebase properly deletes them.
     var modelObj = model.changedAttributes();
     _.each(model.changed, function(value, key) {
-      if (typeof value === "undefined" || value === null)
-        if (key == "id")
+      if (typeof value === "undefined" || value === null) {
+        if (key == "id") {
           delete modelObj[key];
-        else
+        } else {
           modelObj[key] = null;
+        }
+      }
     });
-    if (_.size(modelObj))
+    if (_.size(modelObj)) {
       this.firebase.ref().update(modelObj, this._log);
+    }
   },
 
   _modelChanged: function(snap) {
