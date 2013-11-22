@@ -256,7 +256,6 @@
     },
 
     create: function(model, options) {
-      this._log("Create called. Consider using Collection.add!");
       options = options ? _.clone(options) : {};
       if (options.wait) {
         this._log("Wait option provided to create, ignoring.");
@@ -267,8 +266,8 @@
       if (!model) {
         return false;
       }
-      this.add([model], options);
-      return model;
+      var set = this.add([model], options);
+      return set[0];
     },
 
     reset: function(models, options) {
