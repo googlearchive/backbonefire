@@ -111,6 +111,10 @@
           cb("Could not delete model " + model.id);
         }
       });
+    },
+
+    ref: function() {
+      return this._fbref;
     }
   });
 
