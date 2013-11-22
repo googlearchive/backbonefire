@@ -1,12 +1,11 @@
-BackFire
+Backfire
 ========
-BackFire is an officially supported [Backbone](http://backbonejs.org) binding for
+Backfire is an officially supported [Backbone](http://backbonejs.org) binding for
 [Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire).
-The bindings let you use a special Collection type that will automatically
-synchronize all models contained within it to Firebase, without the need
-to make explicit calls to save or sync.
+The bindings let you use special Model and Collection types that will
+automatically synchronize with Firebase, and also allow you to use regular
 
-### Live Demo: <a target="_blank" href="http://firebase.github.io/backfire">Real-time TODO app</a>.
+Live Demo: <a target="_blank" href="http://firebase.github.io/backfire/examples/todos/">Real-time TODO app</a>.
 
 Usage
 -----
