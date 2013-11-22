@@ -18,6 +18,12 @@ They're both served off of Firebase's CDN, which you are welcome to use!
 <script src="https://cdn.firebase.com/libs/backfire/0.3.0/backbone-firebase.min.js"></script>
 ```
 
+Backfire is also available on Bower.
+
+``` bash
+bower install backfire
+```
+
 You will now have access to the `Backbone.Firebase`,
 `Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
 
