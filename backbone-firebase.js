@@ -179,7 +179,7 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     switch (typeof this.firebase) {
       case "object": break;
       case "string": this.firebase = new Firebase(this.firebase); break;
-      case "function": this.firebase = this.firebase(); break;
+      case "function": this.firebase = this.firebase(options); break;
       default: throw new Error("Invalid firebase reference created");
     }
 
@@ -279,11 +279,16 @@ Backbone.Firebase.Collection = Backbone.Collection.extend({
     models = _.isArray(models) ? models.slice() : [models];
     for (var i = 0; i < models.length; i++) {
       var model = models[i];
+      var backboneModel;
       if (model.toJSON && typeof model.toJSON == "function") {
+        backboneModel = model;
         model = model.toJSON();
       }
       if (!model.id) {
         model.id = this.firebase.ref().push().name();
+        if (backboneModel) {
+          backboneModel.set({id: model.id},{silent: true});
+        }
       }
       ret.push(model);
     }
