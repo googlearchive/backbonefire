@@ -201,6 +201,11 @@
       this.firebase.on("child_changed", _.bind(this._childChanged, this));
       this.firebase.on("child_removed", _.bind(this._childRemoved, this));
 
+      // Once handler to emit "sync" event.
+      this.firebase.once("value", _.bind(function() {
+        this.trigger("sync", this, null, null);
+      }, this));
+
       // Handle changes in any local models.
       this.listenTo(this, "change", this._updateModel, this);
       // Listen for destroy event to remove models.
