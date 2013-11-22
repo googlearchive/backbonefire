@@ -6,8 +6,8 @@
 
 (function() {
 
-  var _ = this._;
-  var Backbone = this.Backbone;
+  var _ = window._;
+  var Backbone = window.Backbone;
 
   Backbone.Firebase = function(ref) {
     this._fbref = ref;
