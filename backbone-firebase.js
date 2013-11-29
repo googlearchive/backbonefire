@@ -497,8 +497,8 @@
       }
       this._listenLocalChange(false);
       this.set(newModel);
-      this.trigger("sync", this, null, null);
       this._listenLocalChange(true);
+      this.trigger("sync", this, null, null);
     },
 
     _log: function(msg) {
