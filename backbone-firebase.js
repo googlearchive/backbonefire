@@ -120,12 +120,7 @@
 
 
   Backbone.Firebase.sync = function(method, model, options, error) {
-    // Throw error if only the 'firebase' property is defined.
-    if (model.firebase || model.collection.firebase) {
-      throw new Error("Property named 'firebase' defined, did you mean 'url'?");
-    }
-
-    var store = model.url || model.collection.url;
+    var store = model.firebase || model.collection.firebase;
 
     // Backwards compatibility with Backbone <= 0.3.3
     if (typeof options == "function") {
@@ -164,10 +159,7 @@
   // the original "Backbone.sync" is still available in "Backbone.oldSync"
   Backbone.sync = function(method, model, options, error) {
     var syncMethod = Backbone.oldSync;
-    if (model.firebase || model.collection.firebase) {
-      throw new Error("Property named 'firebase' defined, did you mean 'url'?");
-    }
-    if (model.url || (model.collection && model.collection.url)) {
+    if (model.firebase || (model.collection && model.collection.firebase)) {
       syncMethod = Backbone.Firebase.sync;
     }
     return syncMethod.apply(this, [method, model, options, error]);

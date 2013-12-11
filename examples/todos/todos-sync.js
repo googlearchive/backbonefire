@@ -45,7 +45,7 @@ $(function(){
     model: Todo,
 
     // Save all of the todo items under the `"todos-backbone"` namespace.
-    url: new Backbone.Firebase("https://backbone.firebaseio.com"),
+    firebase: new Backbone.Firebase("https://backbone.firebaseio.com"),
 
     // Filter down the list of all todo items that are finished.
     done: function() {
