@@ -1,9 +1,18 @@
 {
   "name": "backfire",
   "version": "0.3.0",
-  "main": ["./backbone-firebase.js", "./backbone-firebase.min.js"],
-  "ignore": ["Gruntfile.js", "package.json", "examples", "index.html"],
+  "main": [
+    "./backbone-firebase.js",
+    "./backbone-firebase.min.js"
+  ],
+  "ignore": [
+    "Gruntfile.js",
+    "package.json",
+    "examples",
+    "index.html"
+  ],
   "dependencies": {
-    "backbone": "<=1.1.0"
+    "backbone": "<=1.1.0",
+    "underscore": "~1.5.2"
   }
 }
