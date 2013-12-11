@@ -40,9 +40,9 @@ used in the canonical Todos example.
 Please see [todos-sync.js](https://github.com/firebase/backfire/blob/gh-pages/examples/todos/todos-sync.js)
 for an example of how to use this feature.
 
-### firebase
-You simply provide a `firebase` property in your collection, and that set of
-objects will be persisted at that location.
+### url
+You simply set the `url` property in your collection with an object of type
+`Backbone.Firebase`, and that set of objects will be persisted at that location.
 
 ``` js
 var TodoList = Backbone.Collection.extend({
@@ -60,7 +60,7 @@ var MyTodo = Backbone.Model.extend({
 ```
 
 ### fetch()
-In a collection with the `firebase` property defined, calling `fetch` will
+In a collection with the `url` property defined, calling `fetch` will
 retrieve data from Firebase update the collection with its contents.
 
 ``` js
@@ -68,7 +68,7 @@ TodoList.fetch();
 ```
 
 ### sync()
-In a collection with the `firebase` property defined, calling `sync` will
+In a collection with the `url` property defined, calling `sync` will
 set the contents of the local collection to the specifeid Firebase location.
 
 ``` js
@@ -76,7 +76,7 @@ TodoList.sync();
 ```
 
 ### save()
-In a model with the `firebase` property defined, calling `save` will set the
+In a model with the `url` property defined, calling `save` will set the
 contents of the model to the specified Firebase location.
 
 ``` js
@@ -84,7 +84,7 @@ MyTodo.save();
 ```
 
 ### destroy()
-In a model with the `firebase` property defined, calling `destroy` will remove
+In a model with the `url` property defined, calling `destroy` will remove
 the contents at the specified Firebase location.
 
 ``` js
