@@ -391,7 +391,16 @@
       });
 
       if (_.size(updateAttributes)) {
-        this.firebase.ref().child(model.id).update(updateAttributes);
+        // Special case if ".priority" was updated - a merge is not
+        // allowed so we'll have to do a full setWithPriority.
+        if (_.has(updateAttributes, ".priority")) {
+          var ref = this.firebase.ref().child(model.id);
+          var priority = localAttributes[".priority"];
+          delete localAttributes[".priority"];
+          ref.setWithPriority(localAttributes, priority);
+        } else {
+          this.firebase.ref().child(model.id).update(updateAttributes);
+        }
       }
     },
 
