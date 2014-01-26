@@ -271,6 +271,9 @@
     },
 
     reset: function(models, options) {
+      if(typeof models === 'undefined'){
+        models = [];
+      }
       options = options ? _.clone(options) : {};
       // Remove all models remotely.
       this.remove(this.models, {silent: true});
