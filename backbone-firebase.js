@@ -271,9 +271,6 @@
     },
 
     reset: function(models, options) {
-      if(typeof models === 'undefined'){
-        models = [];
-      }
       options = options ? _.clone(options) : {};
       // Remove all models remotely.
       this.remove(this.models, {silent: true});
@@ -295,7 +292,8 @@
     // TODO: Options will be ignored for add & remove, document this!
     _parseModels: function(models) {
       var ret = [];
-      models = _.isArray(models) ? models.slice() : [models];
+      var singular = !_.isArray(models);
+      models = singular ? (models ? [models] : []) : models.slice();
       for (var i = 0; i < models.length; i++) {
         var model = models[i];
         if (model.toJSON && typeof model.toJSON == "function") {
