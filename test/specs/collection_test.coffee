@@ -17,5 +17,5 @@ describe 'Backbone.Firebase.Collection', ->
 
         it 'should return an empty array when called without parameters', ->
             result = @fbCol._parseModels()
-            expect(result).to.deep.equal([])
+            expect(result).to.eql([])
     
