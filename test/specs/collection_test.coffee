@@ -8,15 +8,14 @@ describe 'Backbone.Firebase.Collection', ->
         expect(@fbCol)
             .to.be.ok
 
-    describe '#reset()', ->
+    describe '#_parseModels()', ->
 
         it 'should be a method', ->
             expect(@fbCol)
-                .to.have.property('reset')
+                .to.have.property('_parseModels')
                 .that.is.a 'function'
 
-        it 'should not throw an error when called without parameters', ->
-            expect( =>
-                @fbCol.reset()
-            ).to.not.throw()
+        it 'should return an empty array when called without parameters', ->
+            result = @fbCol._parseModels()
+            expect(result).to.deep.equal([])
     
