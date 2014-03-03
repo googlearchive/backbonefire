@@ -54,6 +54,13 @@ module.exports = function(grunt) {
           message: 'Build Finished'
         }
       }
+    },
+
+    bump: {
+      options: {
+        files: ['package.json', 'bower.json'],
+        commitFiles: ['package.json', 'bower.json']
+      }
     }
   });
 
@@ -62,6 +69,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-bump');
 
   grunt.registerTask('build', ['jshint', 'uglify']);
   grunt.registerTask('default', ['build']);
