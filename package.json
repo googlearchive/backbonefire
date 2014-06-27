@@ -33,7 +33,7 @@
     "karma-requirejs": "~0.2.0",
     "karma-coffee-preprocessor": "~0.1.0",
     "karma-phantomjs-launcher": "~0.1.0",
-    "karma": "~0.10.5",
+    "karma": "~0.12.8",
     "chai-backbone": "~0.9.2"
   }
 }
