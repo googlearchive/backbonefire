@@ -1,15 +1,20 @@
 /**
  * Backbone Firebase Adapter.
  */
+(function (win, factory) {
+  if (typeof module === 'object' && typeof exports === 'object' && exports === module.exports) {
+    module.exports = factory(require('underscore'), require('backbone'));
+  }
+  else if (typeof define === 'function' && define.amd) {
+    define(['underscore', 'backbone'], factory);
+  }
+  else {
+    win.Backbone.Firebase = factory(win._, win.Backbone);
+  }
+}(this, function(_, Backbone) {
+  "use strict";
 
-"use strict";
-
-(function() {
-
-  var _ = window._;
-  var Backbone = window.Backbone;
-
-  Backbone.Firebase = function(ref) {
+  var BackboneFirebase = function(ref) {
     this._fbref = ref;
     this._children = [];
     if (typeof ref == "string") {
@@ -22,7 +27,7 @@
     this._fbref.on("child_removed", this._childRemoved, this);
   };
 
-  _.extend(Backbone.Firebase.prototype, {
+  _.extend(BackboneFirebase.prototype, {
     _childAdded: function(childSnap, prevChild) {
       var model = childSnap.val();
       model.id = childSnap.name();
@@ -119,7 +124,7 @@
   });
 
 
-  Backbone.Firebase.sync = function(method, model, options, error) {
+  BackboneFirebase.sync = function(method, model, options, error) {
     var store = model.firebase || model.collection.firebase;
 
     // Backwards compatibility with Backbone <= 0.3.3
@@ -160,13 +165,13 @@
   Backbone.sync = function(method, model, options, error) {
     var syncMethod = Backbone.oldSync;
     if (model.firebase || (model.collection && model.collection.firebase)) {
-      syncMethod = Backbone.Firebase.sync;
+      syncMethod = BackboneFirebase.sync;
     }
     return syncMethod.apply(this, [method, model, options, error]);
   };
 
   // Custom Firebase Collection.
-  Backbone.Firebase.Collection = Backbone.Collection.extend({
+  BackboneFirebase.Collection = Backbone.Collection.extend({
     sync: function() {
       this._log("Sync called on a Firebase collection, ignoring.");
     },
@@ -419,7 +424,7 @@
   });
 
   // Custom Firebase Model.
-  Backbone.Firebase.Model = Backbone.Model.extend({
+  BackboneFirebase.Model = Backbone.Model.extend({
     save: function() {
       this._log("Save called on a Firebase model, ignoring.");
     },
@@ -521,4 +526,5 @@
 
   });
 
-})();
+  return BackboneFirebase;
+}));

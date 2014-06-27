@@ -13,19 +13,26 @@ Getting Started
 Include both firebase.js and backbone-firebase.js in your application.
 They're both served off of Firebase's CDN, which you are welcome to use!
 
+### As a Script Include
 ``` html
 <script src="https://cdn.firebase.com/v0/firebase.js"></script>
 <script src="https://cdn.firebase.com/libs/backfire/0.3.0/backbone-firebase.min.js"></script>
 ```
 
-Backfire is also available on Bower.
+You will now have access to the `Backbone.Firebase`,
+`Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
 
+### Bower Install
 ``` bash
 bower install backfire
 ```
 
-You will now have access to the `Backbone.Firebase`,
-`Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
+### Node Install
+``` js
+var BackboneFirebase = require('./backbone-firebase.js');
+```
+
+Pretty much just like web installs; use `BackboneFirebase.Collection`, and `BackboneFirebase.Model`.
 
 Backbone.Firebase
 -----------------
