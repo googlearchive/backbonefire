@@ -3,15 +3,15 @@
  */
 (function (win, factory) {
   if (typeof module === 'object' && typeof exports === 'object' && exports === module.exports) {
-    module.exports = factory(require('underscore'), require('backbone'));
+    module.exports = factory(require('underscore'), require('backbone'), require('firebase'));
   }
   else if (typeof define === 'function' && define.amd) {
-    define(['underscore', 'backbone'], factory);
+    define(['underscore', 'backbone', 'firebase'], factory);
   }
   else {
-    win.Backbone.Firebase = factory(win._, win.Backbone);
+    win.Backbone.Firebase = factory(win._, win.Backbone, win.Firebase);
   }
-}(this, function(_, Backbone) {
+}(this, function(_, Backbone, Firebase) {
   "use strict";
 
   var BackboneFirebase = function(ref) {
@@ -188,16 +188,16 @@
         this.firebase = options.firebase;
       }
       switch (typeof this.firebase) {
-      case "object":
-        break;
-      case "string":
-        this.firebase = new Firebase(this.firebase);
-        break;
-      case "function":
-        this.firebase = this.firebase();
-        break;
-      default:
-        throw new Error("Invalid firebase reference created");
+        case "object":
+          break;
+        case "string":
+          this.firebase = new Firebase(this.firebase);
+          break;
+        case "function":
+          this.firebase = this.firebase();
+          break;
+        default:
+          throw new Error("Invalid firebase reference created");
       }
 
       // Add handlers for remote events.
@@ -454,16 +454,16 @@
         this.firebase = options.firebase;
       }
       switch (typeof this.firebase) {
-      case "object":
-        break;
-      case "string":
-        this.firebase = new Firebase(this.firebase);
-        break;
-      case "function":
-        this.firebase = this.firebase();
-        break;
-      default:
-        throw new Error("Invalid firebase reference created");
+        case "object":
+          break;
+        case "string":
+          this.firebase = new Firebase(this.firebase);
+          break;
+        case "function":
+          this.firebase = this.firebase();
+          break;
+        default:
+          throw new Error("Invalid firebase reference created");
       }
 
       // Add handlers for remote events.
