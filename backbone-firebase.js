@@ -428,7 +428,7 @@
       // TODO: Fix naive success callback. Add error callback.
       this.firebase.ref().set(null, this._log);
       this.trigger("destroy", this, this.collection, options);
-      if (options.success) {
+      if (options && typeof options.success === "function") {
         options.success(this, null, options);
       }
     },
