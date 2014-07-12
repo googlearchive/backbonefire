@@ -1,6 +1,6 @@
 // An example Backbone application contributed by
 // [Jérôme Gravel-Niquet](http://jgn.me/). This demo uses a simple
-// [Firebase adapter](backbone-firebase.js)
+// [Firebase adapter](backfire.js)
 // to persist Backbone models in Firebase.
 
 // Load the application once the DOM is ready, using `jQuery.ready`:

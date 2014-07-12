@@ -1,34 +1,48 @@
-Backfire
-========
-Backfire is an officially supported [Backbone](http://backbonejs.org) binding for
-[Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire).
-The bindings let you use special model and collection types that will
+# BackFire
+
+[![Build Status](https://travis-ci.org/firebase/backfire.svg)](https://travis-ci.org/firebase/backfire)
+[![Version](https://badge.fury.io/gh/firebase%2Fbackfire.svg)](http://badge.fury.io/gh/firebase%2Fbackfire)
+
+BackFire is the officially supported [Backbone](http://backbonejs.org) binding for
+[Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire). The bindings let you use special model and collection types that will
 automatically synchronize with Firebase, and also allow you to use regular
 `Backbone.Sync` based synchronization methods.
 
-Live Demo: <a target="_blank" href="http://firebase.github.io/backfire/examples/todos/">Real-time TODO app</a>.
+## Live Demo
 
-Getting Started
----------------
-Include both firebase.js and backbone-firebase.js in your application.
-They're both served off of Firebase's CDN, which you are welcome to use!
+Play around with our [realtime Todo App demo](http://firebase.github.io/backfire/examples/todos/) which was created using BackFire.
 
-``` html
-<script src="https://cdn.firebase.com/v0/firebase.js"></script>
-<script src="https://cdn.firebase.com/libs/backfire/0.3.0/backbone-firebase.min.js"></script>
+## Downloading BackFire
+
+In order to use BackFire in your project, you need to include the following files in your HTML:
+
+```html
+<!-- Backbone -->
+<script src="http://backbonejs.org/backbone-min.js"></script>
+
+<!-- Firebase -->
+<script src="https://cdn.firebase.com/js/client/1.0.17/firebase.js"></script>
+
+<!-- BackFire -->
+<script src="https://cdn.firebase.com/libs/backfire/0.3.0/backfire.min.js"></script>
 ```
 
-Backfire is also available on Bower.
+Use the URL above to download both the minified and non-minified versions of BackFire from the Firebase CDN. You can also download them from the root of this GitHub repository. [Firebase](https://www.firebase.com/docs/web-quickstart.html?utm_medium=web&utm_source=backfire) and [Backbone](http://backbonejs.org/) can be downloaded directly from their respective websites.
 
-``` bash
-bower install backfire
+You can also install BackFire via Bower and the dependencies will be downloaded automatically:
+
+```bash
+$ bower install backfire --save
 ```
 
-You will now have access to the `Backbone.Firebase`,
-`Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
+Once you've included BackFire and its dependencies into your project, you will have access to the `Backbone.Firebase`, `Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
 
-Backbone.Firebase
------------------
+## Getting Started with Firebase
+
+EmberFire requires Firebase in order to sync data. You can [sign up here](https://www.firebase.com/docs/web-quickstart.html?utm_medium=web&utm_source=emberfire) for a free account.
+
+## Backbone.Firebase
+
 The bindings also override `Backbone.sync` to use Firebase. You may consider
 this option if you want to maintain an explicit seperation between _local_ and
 _remote_ data, and want to use regular Backbone models and collections.
@@ -200,3 +214,21 @@ Removes the model locally, and from Firebase.
 ``` js
 MyTodo.destroy(); // Model is instantly removed from Firebase (and other clients).
 ```
+
+## Contributing
+
+If you'd like to contribute to BackFire, you'll need to run the following commands to get your environment set up:
+
+```bash
+$ git clone https://github.com/firebase/backfire.git
+$ cd backfire           # go to the backfire directory
+$ npm install -g grunt  # globally install grunt task runner
+$ npm install -g bower  # globally install Bower package manager
+$ npm install           # install local npm build / test dependencies
+$ bower install         # install local JavaScript dependencies
+$ grunt watch           # watch for source file changes
+```
+
+`grunt watch` will watch for changes to `backfire.js` and lint and minify the source file when a change occurs. The output file `backfire.min.js` is written to the root directory.
+
+You can run the test suite by navigating to `file:///path/to/firepad/tests/index.html` or via the command line using `grunt test`.
