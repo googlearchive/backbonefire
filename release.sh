@@ -4,9 +4,9 @@ STANDALONE_DEST="../firebase-clients/libs/backfire"
 STANDALONE_STUB="backfire"
 
 
-###########################
+############################
 #  VALIDATE backfire REPO  #
-###########################
+############################
 # Ensure the checked out backfire branch is master
 CHECKED_OUT_BRANCH="$(git branch | grep "*" | awk -F ' ' '{print $2}')"
 if [[ $CHECKED_OUT_BRANCH != "master" ]]; then
@@ -15,7 +15,7 @@ if [[ $CHECKED_OUT_BRANCH != "master" ]]; then
 fi
 
 # Make sure the backfire branch does not have existing changes
-if [[git --git-dir=".git" diff --quiet]]; then
+if ! git --git-dir=".git" diff --quiet; then
   echo "Error: Your backfire repo has existing changes on the master branch. Make sure you commit and push the new version before running this release script."
   exit 1
 fi
@@ -30,7 +30,7 @@ if [[ ! -d $STANDALONE_DEST ]]; then
 fi
 
 # Go to the firebase-clients repo
-cd ${STANDALONE_DEST}/
+cd ../firebase-clients
 
 # Make sure the checked-out firebase-clients branch is master
 FIREBASE_CLIENTS_BRANCH="$(git branch | grep "*" | awk -F ' ' '{print $2}')"
@@ -40,7 +40,7 @@ if [[ $FIREBASE_CLIENTS_BRANCH != "master" ]]; then
 fi
 
 # Make sure the firebase-clients branch does not have existing changes
-if [[git --git-dir=".git" diff --quiet]]; then
+if ! git --git-dir=".git" diff --quiet; then
   echo "Error: Your firebase-clients repo has existing changes on the master branch."
   exit 1
 fi
@@ -48,12 +48,11 @@ fi
 # Go back to starting directory
 cd -
 
-
 ##############################
 #  VALIDATE CLIENT VERSIONS  #
 ##############################
 # Get the version we are releasing
-PARSED_CLIENT_VERSION=$(grep 'Version' backfire.js | awk -F ' ' '{print $3}')
+PARSED_CLIENT_VERSION=$(grep 'Version' backfire.js | head -1 | awk -F ' ' '{print $3}')
 
 # Ensure this is the correct version number
 read -p "What version are we releasing? ($PARSED_CLIENT_VERSION) " VERSION
@@ -66,6 +65,13 @@ echo
 CHANGELOG_VERSION="$(head -1 CHANGELOG.md | awk -F 'v' '{print $2}')"
 if [[ $VERSION != $CHANGELOG_VERSION ]]; then
   echo "Error: Most recent version in changelog (${CHANGELOG_VERSION}) does not match version you are releasing (${VERSION})."
+  exit 1
+fi
+
+# Ensure the README has been updated for the newest version
+README_VERSION="$(grep '<script src=\"https://cdn.firebase.com/libs/backfire/' README.md | awk -F '/' '{print $6}')"
+if [[ $VERSION != $README_VERSION ]]; then
+  echo "Error: Script tag version in README (${README_VERSION}) does not match version you are releasing (${VERSION})."
   exit 1
 fi
 
@@ -149,12 +155,16 @@ echo
 #############################
 # Make the target directory
 mkdir $STANDALONE_TARGET_DIR
+if [[ $? -ne 0 ]]; then
+  echo "Error: Failed to create standalone target directory in firebase-clients repo."
+  exit 1
+fi
 
 # Copy the files to the target directory
 cp $STANDALONE_STUB.js $STANDALONE_TARGET_DIR
 cp $STANDALONE_STUB.min.js $STANDALONE_TARGET_DIR
 
-echo "*** Client (debug and non-debug) copied ***"
+echo "*** Client (debug and non-debug) files copied ***"
 echo
 
 # Overwrite the existing changelog
@@ -181,7 +191,7 @@ if [[ $? -ne 0 ]]; then
 fi
 
 # Commit to the firebase-clients repo
-git commit -am "[firebase-release] Updated Firebase $DESCRIPTION to $VERSION"
+git commit -am "[firebase-release] Updated BackFire to $VERSION"
 if [[ $? -ne 0 ]]; then
   echo "Error: Failed to do 'git commit' from firebase-clients repo."
   exit 1
@@ -208,9 +218,9 @@ cd -
 echo
 echo "Manual steps remaining:"
 echo "  1) Deploy firebase-clients to CDN via Jenkins"
-echo "  2) Update the release notes for Backfire version ${VERSION} on GitHub"
-echo "  3) Update all Backfire client version numbers specified in firebase-website to ${VERSION}"
-echo "  4) Tweet @FirebaseRelease: 'v${VERSION} of @Firebase Backfire is available https://cdn.firebase.com/libs/backfire/$VERSION/backfire.min.js Changelog: https://cdn.firebase.com/libs/backfire/changelog.txt'"
+echo "  2) Update the release notes for BackFire version ${VERSION} on GitHub"
+echo "  3) Update all BackFire client version numbers specified in firebase-website to ${VERSION}"
+echo "  4) Tweet @FirebaseRelease: 'v${VERSION} of Backfire is available https://cdn.firebase.com/libs/backfire/$VERSION/backfire.min.js Changelog: https://cdn.firebase.com/libs/backfire/changelog.txt'"
 echo
 echo "Done! Woot!"
 echo

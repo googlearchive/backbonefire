@@ -105,8 +105,8 @@ the contents at the specified Firebase location.
 MyTodo.destroy();
 ```
 
-Backbone.Firebase.Collection
-----------------------------
+## Backbone.Firebase.Collection
+
 This is a special collection object that will automatically synchronize its
 contents with Firebase. You may extend this object, and must provide a Firebase
 URL or a Firebase reference as the `firebase` property.
@@ -174,8 +174,8 @@ var model = Messages.create({bar: "foo"});
 Messages.get(model.id);
 ```
 
-Backbone.Firebase.Model
------------------------
+## Backbone.Firebase.Model
+
 This is a special model object that will automatically synchronize its
 contents with Firebase. You may extend this object, and must provide a Firebase
 URL or a Firebase reference as the `firebase` property.
@@ -231,4 +231,4 @@ $ grunt watch           # watch for source file changes
 
 `grunt watch` will watch for changes to `backfire.js` and lint and minify the source file when a change occurs. The output file `backfire.min.js` is written to the root directory.
 
-You can run the test suite by navigating to `file:///path/to/firepad/tests/index.html` or via the command line using `grunt test`.
+You can run the test suite via the command line using `grunt test`.
