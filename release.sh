@@ -136,20 +136,6 @@ echo "*** v${VERSION} published to Bower ***"
 echo
 
 
-####################
-#  PUBLISH TO npm  #
-####################
-# Publish the new version to npm
-npm publish
-if [[ $? -ne 0 ]]; then
-  echo "!!! Error publishing to npm! You must do this manually by running 'npm publish'. !!!"
-  exit 1
-fi
-
-echo "*** v${VERSION} of backfire published to npm ***"
-echo
-
-
 #############################
 #  UPDATE firebase-clients  #
 #############################
