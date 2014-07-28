@@ -9,14 +9,14 @@ STANDALONE_STUB="backfire"
 ############################
 # Ensure the checked out backfire branch is master
 CHECKED_OUT_BRANCH="$(git branch | grep "*" | awk -F ' ' '{print $2}')"
-if [[ $CHECKED_OUT_BRANCH != "master" ]]; then
-  echo "Error: Your backfire repo is not on the master branch."
+if [[ $CHECKED_OUT_BRANCH != "gh-pages" ]]; then
+  echo "Error: Your backfire repo is not on the gh-pages branch."
   exit 1
 fi
 
 # Make sure the backfire branch does not have existing changes
 if ! git --git-dir=".git" diff --quiet; then
-  echo "Error: Your backfire repo has existing changes on the master branch. Make sure you commit and push the new version before running this release script."
+  echo "Error: Your backfire repo has existing changes on the gh-pages branch. Make sure you commit and push the new version before running this release script."
   exit 1
 fi
 
