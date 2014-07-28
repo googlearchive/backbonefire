@@ -39,7 +39,7 @@ Once you've included BackFire and its dependencies into your project, you will h
 
 ## Getting Started with Firebase
 
-EmberFire requires Firebase in order to sync data. You can [sign up here](https://www.firebase.com/docs/web-quickstart.html?utm_medium=web&utm_source=emberfire) for a free account.
+BackFire requires Firebase in order to sync data. You can [sign up here](https://www.firebase.com/docs/web-quickstart.html?utm_medium=web&utm_source=backfire) for a free account.
 
 ## Backbone.Firebase
 
