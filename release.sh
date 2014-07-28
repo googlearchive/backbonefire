@@ -7,7 +7,7 @@ STANDALONE_STUB="backfire"
 ############################
 #  VALIDATE backfire REPO  #
 ############################
-# Ensure the checked out backfire branch is master
+# Ensure the checked out backfire branch is gh-pages
 CHECKED_OUT_BRANCH="$(git branch | grep "*" | awk -F ' ' '{print $2}')"
 if [[ $CHECKED_OUT_BRANCH != "gh-pages" ]]; then
   echo "Error: Your backfire repo is not on the gh-pages branch."
@@ -108,7 +108,7 @@ fi
 #  PUBLISH TO Bower  #
 ######################
 # Pull any changes to the backfire repo
-git pull origin master
+git pull origin gh-pages
 if [[ $? -ne 0 ]]; then
   echo "Error: Failed to do 'git pull' from backfire repo."
   exit 1
