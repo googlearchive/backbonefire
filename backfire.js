@@ -1,5 +1,7 @@
 /**
- * Backbone Firebase Adapter.
+ * Backfire: Backbone Firebase Adapter.
+ *
+ * Version 0.3.0
  */
 
 "use strict";

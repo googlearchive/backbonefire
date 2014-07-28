@@ -7,7 +7,7 @@ module.exports = function(grunt) {
     uglify : {
       app : {
         files : {
-          'backbone-firebase.min.js' : ['backbone-firebase.js']
+          'backfire.min.js' : ['backfire.js']
         }
       }
     },
@@ -34,12 +34,12 @@ module.exports = function(grunt) {
         'unused'       : true,
         'trailing'     : true
       },
-      all : ['backbone-firebase.js']
+      all : ['backfire.js']
     },
 
     watch : {
       scripts : {
-        files : 'backbone-firebase.js',
+        files : 'backfire.js',
         tasks : ['default', 'notify:watch'],
         options : {
           interrupt : true
@@ -54,15 +54,29 @@ module.exports = function(grunt) {
           message: 'Build Finished'
         }
       }
+    },
+
+    // Unit tests
+    karma: {
+      options: {
+        configFile: 'test/karma.conf.js',
+      },
+      unit: {
+        autowatch: false,
+        singleRun: true
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-exec');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
+  grunt.loadNpmTasks('grunt-karma');
+
+  // Unit tests
+  grunt.registerTask('test', ['karma:unit']);
 
   grunt.registerTask('build', ['jshint', 'uglify']);
-  grunt.registerTask('default', ['build']);
+  grunt.registerTask('default', ['build', 'test']);
 };
