@@ -221,12 +221,12 @@ If you'd like to contribute to BackFire, you'll need to run the following comman
 
 ```bash
 $ git clone https://github.com/firebase/backfire.git
-$ cd backfire           # go to the backfire directory
-$ npm install -g grunt  # globally install grunt task runner
-$ npm install -g bower  # globally install Bower package manager
-$ npm install           # install local npm build / test dependencies
-$ bower install         # install local JavaScript dependencies
-$ grunt watch           # watch for source file changes
+$ cd backfire               # go to the backfire directory
+$ npm install -g grunt-cli  # globally install grunt task runner
+$ npm install -g bower      # globally install Bower package manager
+$ npm install               # install local npm build / test dependencies
+$ bower install             # install local JavaScript dependencies
+$ grunt watch               # watch for source file changes
 ```
 
 `grunt watch` will watch for changes to `backfire.js` and lint and minify the source file when a change occurs. The output file `backfire.min.js` is written to the root directory.
