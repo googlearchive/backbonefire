@@ -1,7 +1,7 @@
 {
   "name": "backfire",
   "description": "The officially supported Backbone binding for Firebase",
-  "version": "0.3.0",
+  "version": "0.0.0",
   "authors": [
     "Firebase <support@firebase.com> (https://www.firebase.com/)"
   ],
@@ -17,17 +17,18 @@
     "realtime"
   ],
   "main": [
-    "backfire.min.js"
+    "dist/backfire.min.js"
   ],
   "ignore": [
     "**/.*",
+    "src"
     "test",
     "examples",
     "node_modules",
     "bower_components",
     "package.json",
     "Gruntfile.js",
-    "release.sh",
+    "changelog.txt",
     "index.html"
   ],
   "dependencies": {
