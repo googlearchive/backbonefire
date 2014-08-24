@@ -21,7 +21,7 @@
   ],
   "ignore": [
     "**/.*",
-    "src"
+    "src",
     "test",
     "examples",
     "node_modules",
