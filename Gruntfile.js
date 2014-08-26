@@ -4,10 +4,20 @@ module.exports = function(grunt) {
   'use strict';
 
   grunt.initConfig({
+    concat: {
+      dist: {
+        src: ['src/backfire.js'],
+        dest: 'dist/backfire.js'
+      }
+    },
+
     uglify : {
+      options: {
+        preserveComments: "some"
+      },
       app : {
         files : {
-          'backfire.min.js' : ['backfire.js']
+          'dist/backfire.min.js' : ['src/backfire.js']
         }
       }
     },
@@ -21,8 +31,8 @@ module.exports = function(grunt) {
         'devel'   : true,
         'eqnull'  : true,
         'globals' : {
-          'Backbone'            : false,
-          'Firebase'            : false
+          'Backbone' : false,
+          'Firebase' : false
         },
         'globalstrict' : true,
         'indent'       : 2,
@@ -34,12 +44,12 @@ module.exports = function(grunt) {
         'unused'       : true,
         'trailing'     : true
       },
-      all : ['backfire.js']
+      all : ['src/backfire.js']
     },
 
     watch : {
       scripts : {
-        files : 'backfire.js',
+        files : 'src/backfire.js',
         tasks : ['default', 'notify:watch'],
         options : {
           interrupt : true
@@ -68,6 +78,7 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
@@ -77,6 +88,6 @@ module.exports = function(grunt) {
   // Unit tests
   grunt.registerTask('test', ['karma:unit']);
 
-  grunt.registerTask('build', ['jshint', 'uglify']);
+  grunt.registerTask('build', ['jshint', 'concat', 'uglify']);
   grunt.registerTask('default', ['build', 'test']);
 };

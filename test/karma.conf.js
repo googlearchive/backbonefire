@@ -14,7 +14,7 @@ module.exports = function(config) {
       'bower_components/underscore/underscore.js',
       'bower_components/backbone/backbone.js',
       'test/fixtures.coffee',
-      'backfire.js',
+      'src/backfire.js',
       'test/specs/*_test.coffee'
     ],
 

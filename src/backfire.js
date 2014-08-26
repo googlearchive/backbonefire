@@ -1,7 +1,12 @@
-/**
- * Backfire: Backbone Firebase Adapter.
+/*!
+ * BackFire is the officially supported Backbone binding for Firebase. The
+ * bindings let you use special model and collection types that will
+ * automatically synchronize with Firebase, and also allow you to use regular
+ * Backbone.Sync based synchronization methods.
  *
- * Version 0.3.0
+ * BackFire 0.0.0
+ * https://github.com/firebase/backfire/
+ * License: MIT
  */
 
 "use strict";
