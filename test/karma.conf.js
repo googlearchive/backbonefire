@@ -8,11 +8,19 @@ module.exports = function(config) {
     },
 
     files: [
+<<<<<<< Updated upstream
       '../bower_components/underscore/underscore.js',
       '../bower_components/backbone/backbone.js',
       '../test/fixtures.coffee',
       '../src/backfire.js',
       'specs/*_test.coffee'
+=======
+      'bower_components/underscore/underscore.js',
+      'bower_components/backbone/backbone.js',
+      'test/fixtures.js',
+      'src/backfire.js',
+      'test/specs/*_test.js'
+>>>>>>> Stashed changes
     ],
 
     reporters: ['spec', 'failed', 'coverage'],
