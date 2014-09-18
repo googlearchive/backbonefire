@@ -3,7 +3,6 @@ module.exports = function(config) {
     frameworks: ['mocha', 'chai', 'sinon'],
 
     preprocessors: {
-      '**/*.coffee': ['coffee'],
       '../src/*.js': 'coverage'
     },
 
