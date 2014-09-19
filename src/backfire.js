@@ -1,20 +1,15 @@
 /*!
  * BackFire is the officially supported Backbone binding for Firebase. The
- * bindings let you use special model and collection types that will
- * automatically synchronize with Firebase, and also allow you to use regular
- * Backbone.Sync based synchronization methods.
+ * bindings let you use special model and collection types that allow for
+ * synchronizing data with Firebase.
  *
- * BackFire 0.0.0
+ * BackFire 0.4.0
  * https://github.com/firebase/backfire/
  * License: MIT
  */
 
-"use strict";
-
-(function() {
-
-  var _ = window._;
-  var Backbone = window.Backbone;
+(function(_, Backbone) {
+  "use strict";
 
   Backbone.Firebase = function(ref) {
     this._fbref = ref;
@@ -125,7 +120,6 @@
     }
   });
 
-
   Backbone.Firebase.sync = function(method, model, options, error) {
     var store = model.firebase || model.collection.firebase;
 
@@ -158,18 +152,6 @@
         }
       }
     }]);
-  };
-
-  Backbone.oldSync = Backbone.sync;
-
-  // Override "Backbone.sync" to default to Firebase sync.
-  // the original "Backbone.sync" is still available in "Backbone.oldSync"
-  Backbone.sync = function(method, model, options, error) {
-    var syncMethod = Backbone.oldSync;
-    if (model.firebase || (model.collection && model.collection.firebase)) {
-      syncMethod = Backbone.Firebase.sync;
-    }
-    return syncMethod.apply(this, [method, model, options, error]);
   };
 
   // Custom Firebase Collection.
@@ -528,4 +510,4 @@
 
   });
 
-})();
+})(window._, window.Backbone);
