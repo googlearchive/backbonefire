@@ -118,12 +118,12 @@
 
     // Determine whether the realtime or once methods apply
     constructor: function(model, options) {
-      var defaults = _.result(this, 'defaults');
+      //var defaults = _.result(this, 'defaults');
 
       // Apply defaults only after first sync.
-      this.once('sync', function() {
-        this.set(_.defaults(this.toJSON(), defaults));
-      });
+      // this.once('sync', function() {
+      //   this.set(_.defaults(this.toJSON(), defaults));
+      // });
 
       Backbone.Model.apply(this, arguments);
       _.extend(this, { autoSync: true }, options);
