@@ -1,5 +1,7 @@
 describe('Backbone.Firebase.Model', function() {
 
+  MockFirebase.override();
+
   it('should exist', function() {
     return expect(Backbone.Firebase.Model).to.be.ok;
   });
