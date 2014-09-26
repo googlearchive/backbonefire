@@ -10,6 +10,7 @@ module.exports = function(config) {
       '../bower_components/underscore/underscore.js',
       '../bower_components/backbone/backbone.js',
       '../bower_components/mockfirebase/browser/mockfirebase.js',
+      'fixtures.js',
       '../src/backfire.js',
       './specs/*_test.js'
     ],
@@ -30,7 +31,7 @@ module.exports = function(config) {
 
     port: 9876,
 
-    browsers: ['PhantomJS'],
+    browsers: ['Chrome'],
 
     singleRun: false,
     autoWatch: true

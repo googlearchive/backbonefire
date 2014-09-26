@@ -11,7 +11,18 @@
 (function(_, Backbone) {
   "use strict";
 
-  Backbone.Firebase = function() {};
+  Backbone.Firebase = {
+    _determineAutoSync: function(self, options) {
+      var proto = Object.getPrototypeOf(self);
+      return _.extend(
+        {
+          autoSync: proto.hasOwnProperty('autoSync') ? proto.autoSync : true
+        },
+        this,
+        options
+      ).autoSync;
+    }
+  };
 
   // Syncing for once only
   Backbone.Firebase.sync = function(method, model, options) {
@@ -126,7 +137,8 @@
       });
 
       Backbone.Model.apply(this, arguments);
-      _.extend(this, { autoSync: true }, options);
+
+      this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
       switch (typeof this.url) {
       case 'string':
@@ -497,7 +509,7 @@
     constructor: function (model, options) {
       Backbone.Collection.apply(this, arguments);
 
-      _.extend(this, { autoSync: true }, options);
+      this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
       switch (typeof this.url) {
       case 'string':

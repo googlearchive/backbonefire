@@ -54,7 +54,8 @@
     "karma-sinon": "~1.0.0",
     "karma-spec-reporter": "0.0.13",
     "mocha": "~1.14.0",
-    "requirejs": "~2.1.9"
+    "requirejs": "~2.1.9",
+    "karma-chrome-launcher": "^0.1.4"
   },
   "scripts": {
     "test": "grunt test",
