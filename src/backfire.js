@@ -13,39 +13,225 @@
 
   Backbone.Firebase = function() {};
 
-  Backbone.Firebase.sync = function(method, model, options, error) {
-    var store = model.firebase || model.collection.firebase;
+  // Syncing for once only
+  Backbone.Firebase.sync = function(method, model, options) {
+    var modelJSON = model.toJSON();
 
-    // Backwards compatibility with Backbone <= 0.3.3
-    if (typeof options == "function") {
-      options = {
-        success: options,
-        error: error
-      };
-    }
+    if (method === 'read') {
 
-    if (method == "read" && model.id === undefined) {
-      method = "readAll";
-    }
+      model.firebase.once('value', function(snap) {
+        var resp = snap.val();
+        options.success(resp);
+      }, this);
 
-    store[method].apply(store, [model, function(err, val) {
-      if (err) {
-        model.trigger("error", model, err, options);
-        if (Backbone.VERSION === "0.9.10") {
+    } else if (method === 'create') {
+
+      model.firebase.set(modelJSON, function(err) {
+
+        if(err) {
           options.error(model, err, options);
         } else {
-          options.error(err);
+          options.success(model, null, options);
         }
-      } else {
-        model.trigger("sync", model, val, options);
-        if (Backbone.VERSION === "0.9.10") {
-          options.success(model, val, options);
+
+      });
+
+    } else if (method === 'update') {
+
+      model.firebase.update(modelJSON, function(err) {
+
+        if(err) {
+          options.error(modelJSON, err, options);
         } else {
-          options.success(val);
+          options.success(modelJSON, null, options);
         }
-      }
-    }]);
+
+      });
+
+    }
+
   };
+
+  // Model responsible for autoSynced objects
+  // This model is never directly used. The Backbone.Firebase.Model will
+  // inherit from this if it is an autoSynced model
+  var SyncModel = (function() {
+
+    function SyncModel() {
+      // Set up sync events
+
+      // apply remote changes locally
+      this.firebase.on('value', function(snap) {
+        this._setLocal(snap);
+        this.trigger('sync', this, null, null);
+      }, this);
+
+      // apply local changes remotely
+      this._listenLocalChange(function(model) {
+        this.firebase.update(model);
+      });
+
+    }
+
+    SyncModel.protoype = {
+      save: function() {
+        console.warn('Save called on a Firebase model with autoSync enabled, ignoring.');
+      },
+      fetch: function() {
+        console.warn('Save called on a Firebase model with autoSync enabled, ignoring.');
+      },
+      sync: function() {
+        console.warn('Sync called on a Fireabse model with autoSync enabled, ignoring.');
+      }
+    };
+
+    return SyncModel;
+  }());
+
+  // Model responsible for one-time requests
+  // This model is never directly used. The Backbone.Firebase.Model will
+  // inherit from this if it is not an autoSynced model
+  var OnceModel = (function() {
+
+    function OnceModel() {
+
+      // when an unset occurs set the key to null
+      // so Firebase knows to delete it on the server
+      this._listenLocalChange(function(model) {
+        this.set(model, { silent: true });
+      });
+
+    }
+
+    OnceModel.protoype = {
+
+      sync: function(method, model, options) {
+        Backbone.Firebase.sync(method, model, options);
+      }
+
+    };
+
+    return OnceModel;
+  }());
+
+  Backbone.Firebase.Model = Backbone.Model.extend({
+
+    // Determine whether the realtime or once methods apply
+    constructor: function(model, options) {
+      var defaults = _.result(this, 'defaults');
+
+      // Apply defaults only after first sync.
+      this.once('sync', function() {
+        this.set(_.defaults(this.toJSON(), defaults));
+      });
+
+      Backbone.Model.apply(this, arguments);
+      _.extend(this, { autoSync: true }, options);
+
+      switch (typeof this.url) {
+      case 'string':
+        this.firebase = new Firebase(this.url);
+        break;
+      case 'function':
+        this.firebase = new Firebase(this.url());
+        break;
+      default:
+        throw new Error('url parameter required');
+      }
+
+      if(!this.autoSync) {
+        OnceModel.apply(this, arguments);
+        _.extend(this, OnceModel.protoype);
+      } else {
+        _.extend(this, SyncModel.protoype);
+        SyncModel.apply(this, arguments);
+      }
+
+    },
+
+    destroy: function(options) {
+      options = _.extend({}, options);
+      this.firebase.set(null, function(err) {
+        if(err) {
+
+          if(options.error) {
+            options.error(this, err, options);
+          }
+
+        } else {
+
+          if(options.success) {
+            options.success(this, null, options);
+          }
+
+        }
+      });
+      this.trigger('destroy', this, null, options);
+    },
+
+    // siliently set the id of the model to the snapshot name
+    _setId: function(snap) {
+      // if the item new set the name to the id
+      if(this.isNew()) {
+        this.set('id', snap.name(), { silent: true });
+      }
+    },
+
+    // proccess changes from a snapshot and apply locally
+    _setLocal: function(snap) {
+      var newModel = this._processChanges(snap);
+      this.set(newModel);
+    },
+
+    // Unset attributes that have been deleted from the server
+    // by comparing the keys that have been removed.
+    _processChanges: function(snap) {
+
+      // TODO: Tell if the object has been destroyed
+      var newModel = snap.val();
+
+      if (typeof newModel === 'object' && newModel !== null) {
+        var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
+        _.each(diff, _.bind(function(key) {
+          this.unset(key);
+        }, this));
+      }
+
+      // check to see if it needs an id
+      this._setId(snap);
+
+      return newModel;
+    },
+
+    // Find the deleted keys and set their values to null
+    // so Firebase properly deletes them.
+    _updateModel: function(model) {
+      var modelObj = model.changedAttributes();
+      _.each(model.changed, function(value, key) {
+        if (typeof value === "undefined" || value === null) {
+          if (key == "id") {
+            delete modelObj[key];
+          } else {
+            modelObj[key] = null;
+          }
+        }
+      });
+
+      return modelObj;
+    },
+
+    // determine if we will update the model for every change
+    _listenLocalChange: function(cb) {
+      var method = cb ? 'on' : 'off';
+      this[method]('change', function(model) {
+        var newModel = this._updateModel(model);
+        if(_.isFunction(cb)){
+          cb.call(this, newModel);
+        }
+      }, this);
+    }
+
+  });
 
   // Custom Firebase Collection.
   Backbone.Firebase.Collection = Backbone.Collection.extend({
@@ -298,109 +484,6 @@
     _preventSync: function(model, state) {
       model._remoteChanging = state;
     }
-  });
-
-  // Custom Firebase Model.
-  Backbone.Firebase.Model = Backbone.Model.extend({
-    save: function() {
-      this._log("Save called on a Firebase model, ignoring.");
-    },
-
-    destroy: function(options) {
-      // TODO: Fix naive success callback. Add error callback.
-      this.firebase.ref().set(null, this._log);
-      this.trigger("destroy", this, this.collection, options);
-      if (options.success) {
-        options.success(this, null, options);
-      }
-    },
-
-    constructor: function(model, options) {
-      // Store defaults so they don't get applied immediately.
-      var defaults = _.result(this, "defaults");
-
-      // Apply defaults only after first sync.
-      this.once("sync", function() {
-        this.set(_.defaults(this.toJSON(), defaults));
-      });
-
-      // Apply parent constructor (this will also call initialize).
-      Backbone.Model.apply(this, arguments);
-
-      if (options && options.firebase) {
-        this.firebase = options.firebase;
-      }
-      switch (typeof this.firebase) {
-      case "object":
-        break;
-      case "string":
-        this.firebase = new Firebase(this.firebase);
-        break;
-      case "function":
-        this.firebase = this.firebase();
-        break;
-      default:
-        throw new Error("Invalid firebase reference created");
-      }
-
-      // Add handlers for remote events.
-      this.firebase.on("value", _.bind(this._modelChanged, this));
-
-      this._listenLocalChange(true);
-    },
-
-    _listenLocalChange: function(state) {
-      if (state) {
-        this.on("change", this._updateModel, this);
-      } else {
-        this.off("change", this._updateModel, this);
-      }
-    },
-
-    _updateModel: function(model) {
-      // Find the deleted keys and set their values to null
-      // so Firebase properly deletes them.
-      var modelObj = model.changedAttributes();
-      _.each(model.changed, function(value, key) {
-        if (typeof value === "undefined" || value === null) {
-          if (key == "id") {
-            delete modelObj[key];
-          } else {
-            modelObj[key] = null;
-          }
-        }
-      });
-      if (_.size(modelObj)) {
-        this.firebase.ref().update(modelObj, this._log);
-      }
-    },
-
-    _modelChanged: function(snap) {
-      // Unset attributes that have been deleted from the server
-      // by comparing the keys that have been removed.
-      var newModel = snap.val();
-      if (typeof newModel === "object" && newModel !== null) {
-        var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
-        var self = this;
-        _.each(diff, function(key) {
-          self.unset(key);
-        });
-      }
-      this._listenLocalChange(false);
-      this.set(newModel);
-      this._listenLocalChange(true);
-      this.trigger("sync", this, null, null);
-    },
-
-    _log: function(msg) {
-      if (typeof msg === "undefined" || msg === null) {
-        return;
-      }
-      if (console && console.log) {
-        console.log(msg);
-      }
-    }
-
   });
 
 })(window._, window.Backbone);
