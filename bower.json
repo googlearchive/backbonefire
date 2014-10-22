@@ -17,7 +17,7 @@
     "realtime"
   ],
   "main": [
-    "dist/backfire.min.js"
+    "dist/backfire.js"
   ],
   "ignore": [
     "**/.*",
