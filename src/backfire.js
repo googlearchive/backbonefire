@@ -191,14 +191,13 @@
 
     // proccess changes from a snapshot and apply locally
     _setLocal: function(snap) {
-      var newModel = this._processChanges(snap);
+      var newModel = this._unsetAttributes(snap);
       this.set(newModel);
     },
 
     // Unset attributes that have been deleted from the server
     // by comparing the keys that have been removed.
-    _processChanges: function(snap) {
-
+    _unsetAttributes: function(snap) {
       // TODO: Tell if the object has been destroyed
       var newModel = snap.val();
 
