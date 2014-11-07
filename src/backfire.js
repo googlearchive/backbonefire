@@ -389,13 +389,8 @@
       },
 
       _childAdded: function(snap) {
-        var model = snap.val();
-        if (!model.id) {
-          if (!_.isObject(model)) {
-            model = {};
-          }
-          model.id = snap.name();
-        }
+        var model = this._checkId(snap);
+
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
           Backbone.Collection.prototype.add.apply(this, [model], {silent: true});
@@ -405,16 +400,29 @@
         this.get(model.id)._remoteAttributes = model;
       },
 
+      // if the model does not have an id check to make
+      // sure it's an object and assign the id to the
+      // name of the snapshot
+      _checkId: function(snap) {
+        var model = snap.val();
+        if (!model.id) {
+          if (!_.isObject(model)) {
+            model = {};
+          }
+          model.id = snap.name();
+        }
+        return model;
+      },
+
       _childMoved: function(snap) {
         // TODO: Investigate: can this occur without the ID changing?
         this._log("_childMoved called with " + snap.val());
       },
 
+      // when a model has changed remotely find differences between the
+      // local and remote data and apply them to the local model
       _childChanged: function(snap) {
-        var model = snap.val();
-        if (!model.id) {
-          model.id = snap.name();
-        }
+        var model = this._checkId(snap);
 
         var item = _.find(this.models, function(child) {
           return child.id == model.id;
@@ -430,6 +438,8 @@
         this._preventSync(item, true);
         item._remoteAttributes = model;
 
+        // find the attributes that have been deleted remotely and
+        // unset them locally
         var diff = _.difference(_.keys(item.attributes), _.keys(model));
         _.each(diff, function(key) {
           item.unset(key);
@@ -439,11 +449,11 @@
         this._preventSync(item, false);
       },
 
+      // remove an item from the collection when removed remotely
+      // provides the ability to remove siliently
       _childRemoved: function(snap) {
-        var model = snap.val();
-        if (!model.id) {
-          model.id = snap.name();
-        }
+        var model = this._checkId(snap);
+
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
           Backbone.Collection.prototype.remove.apply(
