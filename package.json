@@ -22,7 +22,7 @@
     "firebase",
     "realtime"
   ],
-  "main": "dist/backfire.min.js",
+  "main": "dist/backfire.js",
   "files": [
     "dist/**",
     "LICENSE",
