@@ -11,7 +11,7 @@ allow you to use regular `Backbone.Sync` based synchronization methods.
 
 ## Live Demo
 
-Play around with our [realtime Todo App demo](http://firebase.github.io/backfire/examples/todos/)
+Play around with our [realtime Todo App demo](http://backbonefire.firebaseapp.com)
 which was created using BackFire.
 
 
