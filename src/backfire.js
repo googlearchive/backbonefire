@@ -30,9 +30,21 @@
   };
 
   _.extend(Backbone.Firebase.prototype, {
+
+   /**
+    * A utility for retrieving the key name of a Firebase ref or
+    * DataSnapshot. This is backwards-compatible with `name()`
+    * from Firebase 1.x.x and `key()` from Firebase 2.0.0+. Once
+    * support for Firebase 1.x.x is dropped in EmberFire, this
+    * helper can be removed.
+    */
+    _getKey: function(refOrSnapshot) {
+      return (typeof refOrSnapshot.key === 'function') ? refOrSnapshot.key() : refOrSnapshot.name();
+    },
+
     _childAdded: function(childSnap, prevChild) {
       var model = childSnap.val();
-      model.id = childSnap.name();
+      model.id = this._getKey(childSnap);
       if (prevChild) {
         var item = _.find(this._children, function(child) {
           return child.id == prevChild;
@@ -53,7 +65,7 @@
 
     _childChanged: function(childSnap) {
       var model = childSnap.val();
-      model.id = childSnap.name();
+      model.id = this._getKey(childSnap);
       var item = _.find(this._children, function(child) {
         return child.id == model.id;
       });
@@ -69,7 +81,7 @@
 
     create: function(model, cb) {
       if (!model.id) {
-        model.id = this._fbref.ref().push().name();
+        model.id = this._getKey(this._fbref.ref().push());
       }
 
       var val = model.toJSON();
@@ -306,7 +318,7 @@
           model = model.toJSON();
         }
         if (!model.id) {
-          model.id = this.firebase.ref().push().name();
+          model.id = Backbone.Firebase.prototype._getKey(this.firebase.ref().push());
         }
         ret.push(model);
       }
@@ -319,7 +331,7 @@
         if (!_.isObject(model)) {
           model = {};
         }
-        model.id = snap.name();
+        model.id = Backbone.Firebase.prototype._getKey(snap);
       }
       if (this._suppressEvent === true) {
         this._suppressEvent = false;
@@ -338,7 +350,7 @@
     _childChanged: function(snap) {
       var model = snap.val();
       if (!model.id) {
-        model.id = snap.name();
+        model.id = Backbone.Firebase.prototype._getKey(snap);
       }
 
       var item = _.find(this.models, function(child) {
@@ -365,7 +377,7 @@
     _childRemoved: function(snap) {
       var model = snap.val();
       if (!model.id) {
-        model.id = snap.name();
+        model.id = Backbone.Firebase.prototype._getKey(snap);
       }
       if (this._suppressEvent === true) {
         this._suppressEvent = false;
