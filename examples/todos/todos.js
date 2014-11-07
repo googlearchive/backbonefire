@@ -1,6 +1,5 @@
-// An example Backbone application contributed by
-// [Jérôme Gravel-Niquet](http://jgn.me/). This demo uses a simple
-// Firebase adapter to persist Backbone models.
+// An example Backbone application that uses a Firebase adapter to persist
+// Backbone models. Based on a project by Jérôme Gravel-Niquet (http://jgn.me/).
 
 // Load the application once the DOM is ready, using `jQuery.ready`:
 var Todos;

@@ -32,7 +32,7 @@
     "index.html"
   ],
   "dependencies": {
-    "firebase": "1.0.x",
+    "firebase": "1.1.x",
     "backbone": "<=1.1.0",
     "underscore": "~1.5.2"
   },

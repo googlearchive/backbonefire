@@ -30,7 +30,7 @@
     "package.json"
   ],
   "dependencies": {
-    "firebase": "1.0.x"
+    "firebase": "1.1.x"
   },
   "devDependencies": {
     "chai-backbone": "~0.9.2",
