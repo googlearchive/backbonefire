@@ -1,7 +1,7 @@
 # BackFire
 
 [![Build Status](https://travis-ci.org/firebase/backfire.svg?branch=master)](https://travis-ci.org/firebase/backfire)
-[![Version](https://badge.fury.io/gh/firebase%2Fbackfire.svg)](http://badge.fury.io/gh/firebase%2Fbackfire)
+[![Version](https://badge.fury.io/gh/firebase%2Fbackfire.svg?branch=gh-pages)](http://badge.fury.io/gh/firebase%2Fbackfire)
 
 BackFire is the officially supported [Backbone](http://backbonejs.org) binding for
 [Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire). The bindings let you use
