@@ -35,7 +35,7 @@
     * A utility for retrieving the key name of a Firebase ref or
     * DataSnapshot. This is backwards-compatible with `name()`
     * from Firebase 1.x.x and `key()` from Firebase 2.0.0+. Once
-    * support for Firebase 1.x.x is dropped in EmberFire, this
+    * support for Firebase 1.x.x is dropped in BackFire, this
     * helper can be removed.
     */
     _getKey: function(refOrSnapshot) {
