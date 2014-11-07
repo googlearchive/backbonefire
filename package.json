@@ -1,7 +1,7 @@
 {
   "name": "backfire",
   "description": "The officially supported Backbone binding for Firebase",
-  "version": "0.0.0",
+  "version": "0.4.0",
   "author": "Firebase <support@firebase.com> (https://www.firebase.com/)",
   "homepage": "https://github.com/firebase/backfire/",
   "repository": {

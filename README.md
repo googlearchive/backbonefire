@@ -27,7 +27,7 @@ In order to use BackFire in your project, you need to include the following file
 <script src="https://cdn.firebase.com/js/client/1.0.21/firebase.js"></script>
 
 <!-- BackFire -->
-<script src="https://cdn.firebase.com/libs/backfire/0.3.0/backfire.min.js"></script>
+<script src="https://cdn.firebase.com/libs/backfire/0.4.0/backfire.min.js"></script>
 ```
 
 Use the URL above to download both the minified and non-minified versions of BackFire from the
