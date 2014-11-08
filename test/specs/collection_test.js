@@ -297,11 +297,11 @@ describe('Backbone.Firebase.Collection', function() {
           })
         ];
 
-        model = {
-          id: 1,
+        model = new Backbone.Model({
+          id: "1",
           name: 'Kato',
           age: 26
-        };
+        });
 
       });
 
@@ -322,13 +322,20 @@ describe('Backbone.Firebase.Collection', function() {
 
       });
 
-      it('should call setWithPriority if the .priority property is present', function() {
-
+      it('should call _setWithPriority if the .priority property is present', function() {
+        sinon.spy(collection, '_setWithPriority');
+        model.attributes['.priority'] = 14;
+        collection._updateModel(model);
+        expect(collection._setWithPriority.calledOnce).to.be.ok;
+        collection._setWithPriority.restore();
       });
 
-      it('should set removed attributes to null', function() {
-
-      })
+      it('should call _updateToFirebase if no .priority property is present', function() {
+        sinon.spy(collection, '_updateToFirebase');
+        collection._updateModel(model);
+        expect(collection._updateToFirebase.calledOnce).to.be.ok;
+        collection._updateToFirebase.restore();
+      });
 
     });
 
@@ -389,6 +396,20 @@ describe('Backbone.Firebase.Collection', function() {
   });
 
 
+  describe('#_compareAttributes', function() {
+    // should null remotely out deleted values
+    // 
+  });
+
+  describe('#_setWithPriority', function() {
+    // should call setWithPriority
+    // should delete local priority
+  });
+
+  describe('#_updateToFirebase', function() {
+    // should call Firebase update
+  });
+
   describe('#_parseModels()', function() {
     var Collection = Backbone.Firebase.Collection.extend({
       url: 'Mock://'
@@ -425,6 +446,7 @@ describe('Backbone.Firebase.Collection', function() {
         sinon.spy(Backbone.Collection.prototype, '_prepareModel');
         users.add({ firstname: 'Dave' });
         expect(Backbone.Collection.prototype._prepareModel.calledOnce).to.be.ok;
+        Backbone.Collection.prototype._prepareModel.restore();
       });
 
       it('should prepare models', function() {

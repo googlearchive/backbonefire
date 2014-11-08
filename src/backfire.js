@@ -392,7 +392,7 @@
           }
 
           pushArray.push(model);
-          
+
         }
         return pushArray;
       },
@@ -476,18 +476,41 @@
       // Add handlers for all models in this collection, and any future ones
       // that may be added.
       _updateModel: function(model) {
+        var remoteAttributes;
+        var localAttributes;
+        var updateAttributes;
+        var ref;
+
+        // if the model is already being handled by listeners then return
         if (model._remoteChanging) {
           return;
         }
 
-        var remoteAttributes = model._remoteAttributes || {};
-        var localAttributes = model.toJSON();
+        remoteAttributes = model._remoteAttributes || {};
+        localAttributes = model.toJSON();
+
+        // consolidate the updates to Firebase
+        updateAttributes = this._compareAttributes(remoteAttributes, localAttributes);
+
+        ref = this.firebase.child(model.id);
+
+        // if ".priority" is present setWithPriority
+        // else do a regular update
+        if (_.has(updateAttributes, ".priority")) {
+          this._setWithPriority(ref, localAttributes);
+        } else {
+          this._updateToFirebase(ref, localAttributes);
+        }
+
+      },
+
+      // set the attributes to be updated to Firebase
+      // set any removed attributes to null so that Firebase removes them
+      _compareAttributes: function(remoteAttributes, localAttributes) {
         var updateAttributes = {};
 
         var union = _.union(_.keys(remoteAttributes), _.keys(localAttributes));
-        // set the attributes to be updates to Firebase
-        // set any removed attributes to null so that Firebase removes them
-        // TODO: extract out to function
+
         _.each(union, function(key) {
           if (!_.has(localAttributes, key)) {
             updateAttributes[key] = null;
@@ -496,18 +519,20 @@
           }
         });
 
-        if (_.size(updateAttributes)) {
-          // Special case if ".priority" was updated - a merge is not
-          // allowed so we'll have to do a full setWithPriority.
-          if (_.has(updateAttributes, ".priority")) {
-            var ref = this.firebase.ref().child(model.id);
-            var priority = localAttributes[".priority"];
-            delete localAttributes[".priority"];
-            ref.setWithPriority(localAttributes, priority);
-          } else {
-            this.firebase.ref().child(model.id).update(updateAttributes);
-          }
-        }
+        return updateAttributes;
+      },
+
+      // Special case if ".priority" was updated - a merge is not
+      // allowed so we'll have to do a full setWithPriority.
+      _setWithPriority: function(ref, item) {
+        var priority = item[".priority"];
+        delete item[".priority"];
+        ref.setWithPriority(item, priority);
+      },
+
+      // TODO: possibly pass in options for onComplete callback
+      _updateToFirebase: function(ref, item) {
+        ref.update(item);
       },
 
       // Triggered when model.destroy() is called on one of the children.
