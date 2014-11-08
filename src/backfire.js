@@ -476,6 +476,9 @@
         var updateAttributes = {};
 
         var union = _.union(_.keys(remoteAttributes), _.keys(localAttributes));
+        // set the attributes to be updates to Firebase
+        // set any removed attributes to null so that Firebase removes them
+        // TODO: extract out to function
         _.each(union, function(key) {
           if (!_.has(localAttributes, key)) {
             updateAttributes[key] = null;

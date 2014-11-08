@@ -277,6 +277,103 @@ describe('Backbone.Firebase.Collection', function() {
 
     });
 
+    describe('#_updateModel', function() {
+
+      var collection;
+      var model;
+      beforeEach(function() {
+        var Collection = Backbone.Firebase.Collection.extend({
+          url: 'Mock://',
+          autoSync: true
+        });
+
+        collection = new Collection();
+
+        collection.models = [
+          new Backbone.Model({
+            id: 1,
+            name: 'David',
+            age: 26
+          })
+        ];
+
+        model = {
+          id: 1,
+          name: 'Kato',
+          age: 26
+        };
+
+      });
+
+      it('should not update if the model\'s _remoteChanging property is true', function() {
+
+        model._remoteChanging = true;
+
+        collection._updateModel(model);
+
+        var collectionModel = collection.models[0];
+
+        // The name property should still be equal to 'David'
+        // because 'model' object had _remoteChanging set to true
+        // which cancels the update. This is because _remoteChanging
+        // indicates that the item is being updated through the
+        // Firebase sync listeners
+        collectionModel.get('name').should.equal('David');
+
+      });
+
+      it('should update if the model\'s _remoteChanging property is false', function() {
+        sinon.spy(collection.firebase, 'update');
+
+        collection._updateModel(model);
+
+        var collectionModel = collection.models[0];
+
+        expect(collection.firebase.update.calledOnce).to.be.ok;
+
+      });
+
+      it('should call setWithPriority if the .priority property is present', function() {
+
+      });
+
+      it('should set removed attributes to null', function() {
+
+      })
+
+    });
+
+    describe('#_removeModel', function() {
+
+      var collection;
+      var model;
+      beforeEach(function() {
+        var Collection = Backbone.Firebase.Collection.extend({
+          url: 'Mock://',
+          autoSync: true
+        });
+
+        collection = new Collection();
+
+        collection.models = [
+          new Backbone.Model({
+            id: 1,
+            name: 'David',
+            age: 26
+          })
+        ];
+
+      });
+
+      it('should remove the model if destroy is called', function() {
+
+      });
+
+      it('should fire off a success function if provided', function() {
+
+      });
+
+    });
 
   });
 
