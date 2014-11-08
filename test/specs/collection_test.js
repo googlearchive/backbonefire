@@ -322,17 +322,6 @@ describe('Backbone.Firebase.Collection', function() {
 
       });
 
-      it('should update if the model\'s _remoteChanging property is false', function() {
-        sinon.spy(collection.firebase, 'update');
-
-        collection._updateModel(model);
-
-        var collectionModel = collection.models[0];
-
-        expect(collection.firebase.update.calledOnce).to.be.ok;
-
-      });
-
       it('should call setWithPriority if the .priority property is present', function() {
 
       });
@@ -414,6 +403,36 @@ describe('Backbone.Firebase.Collection', function() {
     it('should return an empty array when called without parameters', function() {
       var result = collection._parseModels();
       return expect(result).to.eql([]);
+    });
+
+    describe('calling Backbone.Collection.prototype._prepareModel', function() {
+      var Users, Users, users;
+
+      beforeEach(function() {
+        User = Backbone.Model.extend({}),
+        Users = Backbone.Firebase.Collection.extend({
+          url: 'Mock://',
+          initialize: function(models, options) {
+            this.model = function(attrs, opts) {
+              return new User(_.extend(attrs, { addedFromCollection: true}), opts);
+            };
+          }
+        });
+        users = new Users();
+      });
+
+      it('should call Backbone.Collection.prototype._prepareModel', function() {
+        sinon.spy(Backbone.Collection.prototype, '_prepareModel');
+        users.add({ firstname: 'Dave' });
+        expect(Backbone.Collection.prototype._prepareModel.calledOnce).to.be.ok;
+      });
+
+      it('should prepare models', function() {
+        var addedArray = users.add({ firstname: 'Dave' });
+        var addedObject = addedArray[0];
+        expect(addedObject.addedFromCollection).to.be.ok;
+      });
+
     });
 
   });

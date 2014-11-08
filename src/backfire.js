@@ -369,23 +369,32 @@
         }
       },
 
-      // TODO: Options will be ignored for add & remove, document this!
-      _parseModels: function(models) {
-        var ret = [];
+      _parseModels: function(models, options) {
+        var pushArray = [];
+        // check if the models paramter is an array or a single object
         var singular = !_.isArray(models);
+        // if the models parameter is a single object then wrap it into an array
         models = singular ? (models ? [models] : []) : models.slice();
 
         for (var i = 0; i < models.length; i++) {
-          var model = models[i];
+
+          // call Backbone's prepareModel to apply options
+          var model = model = Backbone.Collection.prototype._prepareModel.apply(
+            this, [models[i], options || {}]
+          );
+
           if (model.toJSON && typeof model.toJSON == "function") {
             model = model.toJSON();
           }
+
           if (!model.id) {
             model.id = this.firebase.push().name();
           }
-          ret.push(model);
+
+          pushArray.push(model);
+          
         }
-        return ret;
+        return pushArray;
       },
 
       _childAdded: function(snap) {
