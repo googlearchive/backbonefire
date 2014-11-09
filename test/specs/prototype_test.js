@@ -168,6 +168,15 @@ describe('Backbone.Firebase', function() {
         Backbone.Firebase._setToFirebase.restore();
       });
 
+      // test that _onCompleteCheck is called
+      it('should call Backbone.Firebase._onCompleteCheck', function() {
+        sinon.spy(Backbone.Firebase, '_onCompleteCheck');
+        Backbone.Firebase.sync('create', model, null);
+        model.firebase.flush();
+        expect(Backbone.Firebase._onCompleteCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._onCompleteCheck.restore();
+      });
+
     });
 
     describe('#sync("update", ...)', function() {
@@ -179,6 +188,28 @@ describe('Backbone.Firebase', function() {
         expect(Backbone.Firebase._updateToFirebase.calledOnce).to.be.ok;
         Backbone.Firebase._updateToFirebase.restore();
       });
+
+      // test that _onCompleteCheck is called
+      it('should call Backbone.Firebase._onCompleteCheck', function() {
+        sinon.spy(Backbone.Firebase, '_onCompleteCheck');
+        Backbone.Firebase.sync('update', model, null);
+        model.firebase.flush();
+        expect(Backbone.Firebase._onCompleteCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._onCompleteCheck.restore();
+      });
+
+    });
+
+  });
+
+  describe('#_throwError', function() {
+
+    it('should throw and catch an error', function() {
+      try {
+        Backbone.Firebase._throwError('Error');
+      } catch (err) {
+        expect(err).to.be.defined;
+      }
     });
 
   });

@@ -32,11 +32,22 @@ describe('Backbone.Firebase.Model', function() {
     return expect(spy.called).to.be.ok;
   });
 
+  it('should throw an error if an invalid url is provided', function() {
+    var Model = Backbone.Firebase.Model.extend({
+      url: true
+    });
+    try {
+      var model = new Model();
+    } catch (err) {
+      assert(err.message === 'url parameter required');
+    }
+  });
+
   // it('should build a url when urlRoot and an id is provided', function() {
   //   var Model = Backbone.Firebase.Model.extend({
   //     urlRoot: 'Mock://'
   //   });
-  // 
+  //
   //   var model = new Model({
   //     id: 1
   //   });
@@ -56,74 +67,80 @@ describe('Backbone.Firebase.Model', function() {
 
   });
 
-  it('should unset attributes that have been deleted on the server', function() {
-    var Model = Backbone.Firebase.Model.extend({
-      url: 'Mock://'
+  describe('#_unsetAttributes', function() {
+
+    it('should unset attributes that have been deleted on the server', function() {
+      var Model = Backbone.Firebase.Model.extend({
+        url: 'Mock://'
+      });
+      var model = new Model();
+
+      // set the initial attributes silently
+      model.set({
+        firstName: 'David',
+        lastName: 'East'
+      }, { silent: true });
+
+      // create a mock snap that removes the 'lastName' property
+      var mockSnap = new MockSnap({
+        name: 1,
+        val: {
+          firstName: 'David'
+        }
+      });
+
+      model._unsetAttributes(mockSnap);
+
+      expect(model.get('firstName')).to.be.ok;
+      expect(model.get('lastName')).to.be.undefined;
+
     });
-    var model = new Model();
 
-    // set the initial attributes silently
-    model.set({
-      firstName: 'David',
-      lastName: 'East'
-    }, { silent: true });
+    it('should set local', function() {
+      var Model = Backbone.Firebase.Model.extend({
+        url: 'Mock://'
+      });
+      var model = new Model();
+      var mockSnap = new MockSnap();
+      sinon.spy(model, '_unsetAttributes');
 
-    // create a mock snap that removes the 'lastName' property
-    var mockSnap = new MockSnap({
-      name: 1,
-      val: {
-        firstName: 'David'
-      }
+      model._setLocal(mockSnap);
+
+      expect(model._unsetAttributes.calledOnce).to.be.ok;
+      model._unsetAttributes.restore();
     });
 
-    model._unsetAttributes(mockSnap);
-
-    expect(model.get('firstName')).to.be.ok;
-    expect(model.get('lastName')).to.be.undefined;
 
   });
 
-  it('should set local', function() {
-    var Model = Backbone.Firebase.Model.extend({
-      url: 'Mock://'
+  describe('#_setId', function() {
+    it('should set id', function() {
+      // TODO: Test _setId
+      var Model = Backbone.Firebase.Model.extend({
+        url: 'Mock://'
+      });
+      var model = new Model();
+      var mockSnap = new MockSnap();
+      sinon.spy(mockSnap, 'name');
+      model._setId(mockSnap);
+
+      expect(mockSnap.name.calledOnce).to.be.ok;
+
+      mockSnap.name.restore();
     });
-    var model = new Model();
-    var mockSnap = new MockSnap();
-    sinon.spy(model, '_unsetAttributes');
 
-    model._setLocal(mockSnap);
+    it('should set id to its value', function() {
+      var Model = Backbone.Firebase.Model.extend({
+        url: 'Mock://'
+      });
+      var model = new Model();
+      var mockSnap = new MockSnap({
+        name: 1
+      });
+      model._setId(mockSnap);
 
-    expect(model._unsetAttributes.calledOnce).to.be.ok;
-    model._unsetAttributes.restore();
-  });
-
-  it('should set id', function() {
-    // TODO: Test _setId
-    var Model = Backbone.Firebase.Model.extend({
-      url: 'Mock://'
+      model.get('id').should.equal(mockSnap.name());
     });
-    var model = new Model();
-    var mockSnap = new MockSnap();
-    sinon.spy(mockSnap, 'name');
-    model._setId(mockSnap);
-
-    expect(mockSnap.name.calledOnce).to.be.ok;
-
-    mockSnap.name.restore();
-  });
-
-  it('should set id to its value', function() {
-    // TODO: Test _setId
-    var Model = Backbone.Firebase.Model.extend({
-      url: 'Mock://'
-    });
-    var model = new Model();
-    var mockSnap = new MockSnap({
-      name: 1
-    });
-    model._setId(mockSnap);
-
-    model.get('id').should.equal(mockSnap.name());
   });
 
   describe('autoSync options', function() {
@@ -303,6 +320,61 @@ describe('Backbone.Firebase.Model', function() {
   });
 
   describe('autoSync:false', function() {
+
+    describe('OnceModel', function() {
+
+      describe('#constructor', function(){
+
+        it('should call _listenLocalChange', function() {
+          sinon.spy(Backbone.Firebase.Model.prototype, '_listenLocalChange');
+
+          var Model = Backbone.Firebase.Model.extend({
+            url: 'Mock://',
+            autoSync: false
+          });
+          model = new Model();
+
+          expect(Backbone.Firebase.Model.prototype._listenLocalChange.calledOnce).to.be.ok;
+          Backbone.Firebase.Model.prototype._listenLocalChange.restore();
+        });
+
+        it('should call Backbone.Firebase.Model.prototype.set', function() {
+          sinon.spy(Backbone.Firebase.Model.prototype, 'set');
+
+          var Model = Backbone.Firebase.Model.extend({
+            url: 'Mock://',
+            autoSync: false
+          });
+          model = new Model();
+
+          expect(Backbone.Firebase.Model.prototype.set.calledOnce).to.be.ok;
+          Backbone.Firebase.Model.prototype.set.restore();
+        });
+
+      });
+
+      describe('#sync', function() {
+
+        // Backbone.Firebase.Model.sync should proxy to Backbone.Firebase.sync
+        // if it comes from a OnceModel
+        it('should call Backbone.Firebase.sync', function() {
+          sinon.spy(Backbone.Firebase, 'sync');
+
+          var Model = Backbone.Firebase.Model.extend({
+            url: 'Mock://',
+            autoSync: false
+          });
+          model = new Model();
+
+          model.sync('read', model, null);
+
+          expect(Backbone.Firebase.sync.calledOnce).to.be.ok;
+          Backbone.Firebase.sync.restore();
+        });
+
+      });
+
+    });
 
     it('should silently set update values locally', function() {
       // TODO: Test _listenLocalChange to silently update

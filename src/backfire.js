@@ -82,6 +82,10 @@
 
   };
 
+  Backbone.Firebase._throwError = function(message) {
+    throw new Error(message);
+  };
+
   // Model responsible for autoSynced objects
   // This model is never directly used. The Backbone.Firebase.Model will
   // inherit from this if it is an autoSynced model
@@ -167,7 +171,7 @@
         this.firebase = new Firebase(this.url());
         break;
       default:
-        throw new Error('url parameter required');
+        Backbone.Firebase._throwError('url parameter required');
       }
 
       if(!this.autoSync) {
