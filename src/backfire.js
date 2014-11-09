@@ -528,6 +528,7 @@
         var priority = item[".priority"];
         delete item[".priority"];
         ref.setWithPriority(item, priority);
+        return item;
       },
 
       // TODO: possibly pass in options for onComplete callback

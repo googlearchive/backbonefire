@@ -18,6 +18,154 @@ describe('Backbone.Firebase.Collection', function() {
     return expect(new Collection()).to.be.ok;
   });
 
+  describe('#_compareAttributes', function() {
+    // should null remotely out deleted values
+    var collection;
+    beforeEach(function() {
+      var Collection = Backbone.Firebase.Collection.extend({
+        url: 'Mock://',
+        autoSync: true
+      });
+
+      collection = new Collection();
+    });
+
+    it('should should set deleted values to null', function() {
+
+      var remoteAttributes = {
+        id: 1,
+        name: 'David'
+      };
+
+      var localAttributes = {
+        id: 1
+      };
+
+      var updatedAttributes = collection._compareAttributes(remoteAttributes, localAttributes);
+
+      // name should be set to null since the local property for name was removed
+      assert(updatedAttributes.name === null);
+    });
+
+    it('should return updated attributes', function() {
+
+      var remoteAttributes = {
+        id: 1,
+        name: 'Kato'
+      };
+
+      var localAttributes = {
+        id: 1,
+        name: 'David',
+        age: 26
+      };
+
+      // name and age should be populated in an object because they were updated in the local attributes
+      var updatedAttributes = collection._compareAttributes(remoteAttributes, localAttributes);
+      expect(updatedAttributes).to.be.defined;
+      expect(updatedAttributes.id).to.be.undefined;
+      assert(updatedAttributes.name === 'David');
+      assert(updatedAttributes.age === 26);
+    });
+
+  });
+
+  describe('#_setWithPriority', function() {
+    var collection;
+    var ref;
+    var item;
+    beforeEach(function() {
+      var Collection = Backbone.Firebase.Collection.extend({
+        url: 'Mock://',
+        autoSync: true
+      });
+
+      collection = new Collection();
+      ref = new Firebase('Mock://');
+      item = {
+        '.priority': 1,
+        name: 'David'
+      }
+    });
+
+    it('should call setWithPriority on a Firebase reference', function() {
+      var setItem = collection._setWithPriority(ref, item);
+      expect(ref.setWithPriority.calledOnce).to.be.ok;
+      ref.setWithPriority.restore();
+    });
+
+    it('should delete local priority', function() {
+      var setItem = collection._setWithPriority(ref, item);
+      expect(setItem['.priority']).to.be.undefined;
+    });
+
+  });
+
+  describe('#_updateToFirebase', function() {
+
+    it('should call update on a Firebase reference', function() {
+      var Collection = Backbone.Firebase.Collection.extend({
+        url: 'Mock://',
+        autoSync: true
+      });
+      var ref = new Firebase('Mock://');
+      collection = new Collection();
+      collection._updateToFirebase(ref, { id: '1' });
+      expect(ref.update.calledOnce).to.be.ok;
+      ref.update.restore();
+    });
+
+  });
+
+  describe('#_parseModels()', function() {
+    var Collection = Backbone.Firebase.Collection.extend({
+      url: 'Mock://'
+    });
+
+    var collection = new Collection();
+
+    it('should be a method', function() {
+      return expect(collection).to.have.property('_parseModels').that.is.a('function');
+    });
+
+    it('should return an empty array when called without parameters', function() {
+      var result = collection._parseModels();
+      return expect(result).to.eql([]);
+    });
+
+    describe('calling Backbone.Collection.prototype._prepareModel', function() {
+      var Users, Users, users;
+
+      beforeEach(function() {
+        User = Backbone.Model.extend({}),
+        Users = Backbone.Firebase.Collection.extend({
+          url: 'Mock://',
+          initialize: function(models, options) {
+            this.model = function(attrs, opts) {
+              return new User(_.extend(attrs, { addedFromCollection: true}), opts);
+            };
+          }
+        });
+        users = new Users();
+      });
+
+      it('should call Backbone.Collection.prototype._prepareModel', function() {
+        sinon.spy(Backbone.Collection.prototype, '_prepareModel');
+        users.add({ firstname: 'Dave' });
+        expect(Backbone.Collection.prototype._prepareModel.calledOnce).to.be.ok;
+        Backbone.Collection.prototype._prepareModel.restore();
+      });
+
+      it('should prepare models', function() {
+        var addedArray = users.add({ firstname: 'Dave' });
+        var addedObject = addedArray[0];
+        expect(addedObject.addedFromCollection).to.be.ok;
+      });
+
+    });
+
+  });
+
   describe('autoSync:true', function() {
 
     it('should enable autoSync by default', function() {
@@ -193,11 +341,12 @@ describe('Backbone.Firebase.Collection', function() {
         collection._childRemoved(mockSnap);
 
         expect(Backbone.Collection.prototype.remove.calledOnce).to.be.ok;
-
+        Backbone.Collection.prototype.remove.restore();
       });
 
       // silent remove
       it('should call Backbone.Collection.remove silently', function() {
+        sinon.spy(Backbone.Collection.prototype, 'remove');
 
         var mockSnap = new MockSnap({
           name: 1,
@@ -212,7 +361,7 @@ describe('Backbone.Firebase.Collection', function() {
         collection._childRemoved(mockSnap);
 
         expect(Backbone.Collection.prototype.remove.calledWith({silent: true}));
-
+        Backbone.Collection.prototype.remove.restore();
       });
 
     });
@@ -253,12 +402,12 @@ describe('Backbone.Firebase.Collection', function() {
         collection._childAdded(mockSnap);
 
         expect(Backbone.Collection.prototype.add.calledOnce).to.be.ok;
-
+        Backbone.Collection.prototype.add.restore();
       });
 
       // silent add
       it('should call Backbone.Collection.add silently', function() {
-
+        sinon.spy(Backbone.Collection.prototype, 'add');
         var mockSnap = new MockSnap({
           name: 1,
           val: {
@@ -272,7 +421,7 @@ describe('Backbone.Firebase.Collection', function() {
         collection._childAdded(mockSnap);
 
         expect(Backbone.Collection.prototype.add.calledWith({silent: true}));
-
+        Backbone.Collection.prototype.add.restore();
       });
 
     });
@@ -391,70 +540,6 @@ describe('Backbone.Firebase.Collection', function() {
       models.firebase.flush();
 
       return expect(spy.called).to.be.false;
-    });
-
-  });
-
-
-  describe('#_compareAttributes', function() {
-    // should null remotely out deleted values
-    // 
-  });
-
-  describe('#_setWithPriority', function() {
-    // should call setWithPriority
-    // should delete local priority
-  });
-
-  describe('#_updateToFirebase', function() {
-    // should call Firebase update
-  });
-
-  describe('#_parseModels()', function() {
-    var Collection = Backbone.Firebase.Collection.extend({
-      url: 'Mock://'
-    });
-
-    var collection = new Collection();
-
-    it('should be a method', function() {
-      return expect(collection).to.have.property('_parseModels').that.is.a('function');
-    });
-
-    it('should return an empty array when called without parameters', function() {
-      var result = collection._parseModels();
-      return expect(result).to.eql([]);
-    });
-
-    describe('calling Backbone.Collection.prototype._prepareModel', function() {
-      var Users, Users, users;
-
-      beforeEach(function() {
-        User = Backbone.Model.extend({}),
-        Users = Backbone.Firebase.Collection.extend({
-          url: 'Mock://',
-          initialize: function(models, options) {
-            this.model = function(attrs, opts) {
-              return new User(_.extend(attrs, { addedFromCollection: true}), opts);
-            };
-          }
-        });
-        users = new Users();
-      });
-
-      it('should call Backbone.Collection.prototype._prepareModel', function() {
-        sinon.spy(Backbone.Collection.prototype, '_prepareModel');
-        users.add({ firstname: 'Dave' });
-        expect(Backbone.Collection.prototype._prepareModel.calledOnce).to.be.ok;
-        Backbone.Collection.prototype._prepareModel.restore();
-      });
-
-      it('should prepare models', function() {
-        var addedArray = users.add({ firstname: 'Dave' });
-        var addedObject = addedArray[0];
-        expect(addedObject.addedFromCollection).to.be.ok;
-      });
-
     });
 
   });
