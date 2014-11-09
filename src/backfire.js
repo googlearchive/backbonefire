@@ -11,19 +11,6 @@
 (function(_, Backbone) {
   "use strict";
 
-  if ( typeof Object.getPrototypeOf !== "function" ) {
-    if ( typeof "test".__proto__ === "object" ) {
-      Object.getPrototypeOf = function(object){
-        return object.__proto__;
-      };
-    } else {
-      Object.getPrototypeOf = function(object){
-        // May break if the constructor has been tampered with
-        return object.constructor.prototype;
-      };
-    }
-  }
-
   Backbone.Firebase = {
     _determineAutoSync: function(self, options) {
       var proto = Object.getPrototypeOf(self);
