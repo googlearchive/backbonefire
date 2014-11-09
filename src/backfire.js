@@ -30,35 +30,54 @@
 
     if (method === 'read') {
 
-      model.firebase.once('value', function(snap) {
+      Backbone.Firebase._readOnce(model.firebase, function onComplete(snap) {
         var resp = snap.val();
         options.success(resp);
-      }, this);
+      });
 
     } else if (method === 'create') {
 
-      model.firebase.set(modelJSON, function(err) {
-
-        if(err) {
-          options.error(model, err, options);
-        } else {
-          options.success(model, null, options);
+      Backbone.Firebase._setToFirebase(
+        model.firebase,
+        modelJSON,
+        function(err) {
+          Backbone.Firebase._onCompleteCheck(err, modelJSON, options);
         }
-
-      });
+      );
 
     } else if (method === 'update') {
 
-      model.firebase.update(modelJSON, function(err) {
-
-        if(err) {
-          options.error(modelJSON, err, options);
-        } else {
-          options.success(modelJSON, null, options);
+      Backbone.Firebase._updateToFirebase(
+        model.firebase,
+        modelJSON,
+        function(err) {
+          Backbone.Firebase._onCompleteCheck(err, modelJSON, options);
         }
+      );
 
-      });
+    }
 
+  };
+
+  Backbone.Firebase._readOnce = function(ref, cb) {
+    ref.once('value', cb);
+  };
+
+  Backbone.Firebase._setToFirebase = function(ref, item, onComplete) {
+    ref.set(item, onComplete);
+  };
+
+  Backbone.Firebase._updateToFirebase = function(ref, item, onComplete) {
+    ref.update(item, onComplete);
+  };
+
+  Backbone.Firebase._onCompleteCheck = function(err, item, options) {
+    if(!options) { return; }
+
+    if(err) {
+      options.error(item, err, options);
+    } else {
+      options.success(item, null, options);
     }
 
   };
