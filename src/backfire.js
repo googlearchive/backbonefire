@@ -72,7 +72,7 @@
   };
 
   Backbone.Firebase._onCompleteCheck = function(err, item, options) {
-    if(!options) { return };
+    if(!options) { return }
 
     if(err) {
       options.error(item, err, options);
