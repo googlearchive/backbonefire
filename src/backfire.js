@@ -379,7 +379,7 @@
         for (var i = 0; i < models.length; i++) {
 
           // call Backbone's prepareModel to apply options
-          var model = model = Backbone.Collection.prototype._prepareModel.apply(
+          var model = Backbone.Collection.prototype._prepareModel.apply(
             this, [models[i], options || {}]
           );
 
