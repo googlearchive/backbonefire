@@ -81,7 +81,6 @@ describe('Backbone.Firebase.Collection', function() {
       });
 
       collection = new Collection();
-      ref = new Firebase('Mock://');
       item = {
         '.priority': 1,
         name: 'David'
@@ -89,13 +88,14 @@ describe('Backbone.Firebase.Collection', function() {
     });
 
     it('should call setWithPriority on a Firebase reference', function() {
-      var setItem = collection._setWithPriority(ref, item);
-      expect(ref.setWithPriority.calledOnce).to.be.ok;
-      ref.setWithPriority.restore();
+      collection._setWithPriority(collection.firebase, item);
+      collection.firebase.flush();
+      expect(collection.firebase.setWithPriority.calledOnce).to.be.ok;
     });
 
     it('should delete local priority', function() {
-      var setItem = collection._setWithPriority(ref, item);
+      var setItem = collection._setWithPriority(collection.firebase, item);
+      collection.firebase.flush();
       expect(setItem['.priority']).to.be.undefined;
     });
 
@@ -108,11 +108,10 @@ describe('Backbone.Firebase.Collection', function() {
         url: 'Mock://',
         autoSync: true
       });
-      var ref = new Firebase('Mock://');
       collection = new Collection();
-      collection._updateToFirebase(ref, { id: '1' });
-      expect(ref.update.calledOnce).to.be.ok;
-      ref.update.restore();
+      collection._updateToFirebase(collection.firebase, { id: '1' });
+      collection.firebase.flush();
+      expect(collection.firebase.update.calledOnce).to.be.ok;
     });
 
   });
