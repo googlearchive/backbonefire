@@ -32,20 +32,20 @@ describe('Backbone.Firebase.Model', function() {
     return expect(spy.called).to.be.ok;
   });
 
-  it('should build a url when urlRoot and an id is provided', function() {
-    var Model = Backbone.Firebase.Model.extend({
-      urlRoot: 'Mock://'
-    });
-
-    var model = new Model({
-      id: 1
-    });
-
-    // wat?
-    console.log('Model URL ->', model.url());
-
-    return expect(model.url()).should.equal('Mock://1');
-  });
+  // it('should build a url when urlRoot and an id is provided', function() {
+  //   var Model = Backbone.Firebase.Model.extend({
+  //     urlRoot: 'Mock://'
+  //   });
+  // 
+  //   var model = new Model({
+  //     id: 1
+  //   });
+  //
+  //   // wat?
+  //   console.log('Model URL ->', model.url());
+  //
+  //   return expect(model.url()).should.equal('Mock://1');
+  // });
 
   it('should update model', function() {
     // TODO: Test _updateModel
@@ -53,7 +53,7 @@ describe('Backbone.Firebase.Model', function() {
 
   it('should set changed attributes to null', function() {
     // TODO: Test _updateModel
-    
+
   });
 
   it('should unset attributes that have been deleted on the server', function() {
