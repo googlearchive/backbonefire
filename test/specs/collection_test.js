@@ -18,6 +18,29 @@ describe('Backbone.Firebase.Collection', function() {
     return expect(new Collection()).to.be.ok;
   });
 
+  // call url function
+  it('should call the url property as a function', function() {
+    var spy = sinon.spy();
+    var Collection = Backbone.Firebase.Collection.extend({
+      url: spy
+    });
+    var collection = new Collection();
+    expect(spy.calledOnce).to.be.true;
+  });
+
+  // throw err
+  it('should throw an error if an invalid url is provided', function() {
+    var Collection = Backbone.Firebase.Collection.extend({
+      url: true
+    });
+    try {
+      var model = new Collection();
+    } catch (err) {
+      assert(err.message === 'url parameter required');
+    }
+  });
+
+
   describe('#_compareAttributes', function() {
     // should null remotely out deleted values
     var collection;
@@ -133,7 +156,7 @@ describe('Backbone.Firebase.Collection', function() {
     });
 
     describe('calling Backbone.Collection.prototype._prepareModel', function() {
-      var Users, Users, users;
+      var Users, Users, collection;
 
       beforeEach(function() {
         User = Backbone.Model.extend({}),
@@ -145,18 +168,18 @@ describe('Backbone.Firebase.Collection', function() {
             };
           }
         });
-        users = new Users();
+        collection = new Users();
       });
 
       it('should call Backbone.Collection.prototype._prepareModel', function() {
         sinon.spy(Backbone.Collection.prototype, '_prepareModel');
-        users.add({ firstname: 'Dave' });
+        collection.add({ firstname: 'Dave' });
         expect(Backbone.Collection.prototype._prepareModel.calledOnce).to.be.ok;
         Backbone.Collection.prototype._prepareModel.restore();
       });
 
       it('should prepare models', function() {
-        var addedArray = users.add({ firstname: 'Dave' });
+        var addedArray = collection.add({ firstname: 'Dave' });
         var addedObject = addedArray[0];
         expect(addedObject.addedFromCollection).to.be.ok;
       });
@@ -166,6 +189,20 @@ describe('Backbone.Firebase.Collection', function() {
   });
 
   describe('SyncCollection', function() {
+
+    var collection;
+    beforeEach(function() {
+      User = Backbone.Model.extend({}),
+      Users = Backbone.Firebase.Collection.extend({
+        url: 'Mock://',
+        initialize: function(models, options) {
+          this.model = function(attrs, opts) {
+            return new User(_.extend(attrs, { addedFromCollection: true}), opts);
+          };
+        }
+      });
+      collection = new Users();
+    });
 
     it('should enable autoSync by default', function() {
       var Model = Backbone.Firebase.Collection.extend({
@@ -193,7 +230,6 @@ describe('Backbone.Firebase.Collection', function() {
       return expect(spy.called).to.be.ok;
     });
 
-
     it('should add an id to a new model', function() {
 
       var mockSnap = new MockSnap({
@@ -212,6 +248,151 @@ describe('Backbone.Firebase.Collection', function() {
 
       expect(model.id).to.be.ok;
       model.id.should.equal(mockSnap.name());
+
+    });
+
+    describe('#create', function() {
+
+      // ignore wait
+      it('should ignore options.wait', function() {
+        sinon.spy(collection, '_log');
+        collection.create({ firstname: 'David'}, { wait: function() { }});
+        collection.firebase.flush();
+
+        expect(collection._log.calledOnce).to.be.ok;
+
+        collection._log.restore();
+      });
+
+      // call SyncCollection.add
+      it('should call SyncCollection.add', function() {
+        sinon.spy(collection, 'add');
+
+        collection.create({ firstname: 'David'});
+        collection.firebase.flush();
+
+        expect(collection.add.calledOnce).to.be.true;
+
+        collection.add.restore();
+      });
+
+      // return false for no model
+      it('should return false when no model is provided', function() {
+        var expectFalse = collection.create();
+        collection.firebase.flush();
+        expect(expectFalse).to.be.false;
+      });
+
+    });
+
+    describe('#remove', function() {
+
+      // call _setWithCheck
+      it('should call Backbone.Firebase._setWithCheck', function() {
+        sinon.spy(Backbone.Firebase, '_setWithCheck')
+
+        collection.remove({ id: '1'});
+        collection.firebase.flush();
+
+        expect(Backbone.Firebase._setWithCheck.calledOnce).to.be.ok;
+
+        Backbone.Firebase._setWithCheck.restore();
+      });
+
+      // call silently
+      it('should set _suppressEvent to true when set silently', function() {
+        collection.remove({ id: '1'}, { silent: true });
+        // TODO: investigate
+        //collection.firebase.flush();
+        expect(collection._suppressEvent).to.be.ok;
+      });
+
+    });
+
+    describe('#_childMoved', function() {
+
+      it('shoud call _log', function() {
+        sinon.spy(collection, '_log');
+        var mockSnap = new MockSnap({
+          name: 1,
+          val: {
+            name: 'David'
+          }
+        });
+        collection._childMoved(mockSnap);
+
+        expect(collection._log.calledOnce).to.be.ok;
+
+        collection._log.restore();
+      });
+
+    });
+
+    describe('#reset', function() {
+
+      // call remove
+      it('should call SyncCollection.remove', function() {
+        sinon.spy(collection, 'remove');
+
+        collection.reset({ id: '1'});
+        collection.firebase.flush();
+
+        expect(collection.remove.calledOnce).to.be.ok;
+
+        collection.remove.restore();
+      });
+
+      // call add
+      it('should call SyncCollection.add', function() {
+        sinon.spy(collection, 'add');
+
+        collection.reset({ id: '1'});
+        collection.firebase.flush();
+
+        expect(collection.add.calledOnce).to.be.ok;
+
+        collection.add.restore();
+      });
+
+      // don't trigger reset when silent
+      it('should not trigger the resete event when silent is passed', function() {
+        var spy = sinon.spy();
+
+        collection.on('reset', spy);
+
+        collection.reset({ id: '1'}, { silent: true });
+        collection.firebase.flush();
+
+        expect(spy.calledOnce).to.be.false;
+      });
+
+      it('should trigger the resete event when silent is passed', function() {
+        var spy = sinon.spy();
+
+        collection.on('reset', spy);
+
+        collection.reset({ id: '1'});
+        collection.firebase.flush();
+
+        expect(spy.calledOnce).to.be.true;
+      });
+
+    });
+
+    describe('#_log', function() {
+
+      beforeEach(function() {
+        sinon.spy(console, 'log');
+      });
+
+      afterEach(function() {
+        console.log.restore();
+      });
+
+      it('should call console.log', function() {
+        collection._log('logging');
+        expect(console.log.calledOnce).to.be.true;
+      });
 
     });
 
@@ -302,6 +483,23 @@ describe('Backbone.Firebase.Collection', function() {
 
       });
 
+      it('should add when item cannot be found', function() {
+        sinon.spy(collection, '_childAdded');
+
+        var mockSnap = new MockSnap({
+          name: 4,
+          val: {
+            id: 4,
+            name: 'Cash',
+            age: 2
+          }
+        });
+
+        collection._childChanged(mockSnap);
+        expect(collection._childAdded.calledOnce).to.be.true;
+
+        collection._childAdded.restore();
+      });
     });
 
     describe('#_childRemoved', function() {
@@ -509,12 +707,15 @@ describe('Backbone.Firebase.Collection', function() {
 
       });
 
-      it('should remove the model if destroy is called', function() {
-
-      });
-
-      it('should fire off a success function if provided', function() {
-
+      it('should call _setWithCheck', function() {
+        var model = new Backbone.Model({
+          id: '1'
+        });
+        sinon.spy(Backbone.Firebase, '_setWithCheck');
+        collection._removeModel(model, collection, null);
+        collection.firebase.flush();
+        expect(Backbone.Firebase._setWithCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._setWithCheck.restore();
       });
 
     });
