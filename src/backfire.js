@@ -74,12 +74,11 @@
   Backbone.Firebase._onCompleteCheck = function(err, item, options) {
     if(!options) { return; }
 
-    if(err) {
+    if(err && options.error) {
       options.error(item, err, options);
-    } else {
+    } else if(options.success) {
       options.success(item, null, options);
     }
-
   };
 
   Backbone.Firebase._throwError = function(message) {
@@ -186,20 +185,8 @@
 
     destroy: function(options) {
       options = _.extend({}, options);
-      this.firebase.set(null, function(err) {
-        if(err) {
-
-          if(options.error) {
-            options.error(this, err, options);
-          }
-
-        } else {
-
-          if(options.success) {
-            options.success(this, null, options);
-          }
-
-        }
+      Backbone.Firebase._setToFirebase(this.firebase, null, function(err) {
+        Backbone.Firebase._onCompleteCheck(err, null, options);
       });
       this.trigger('destroy', this, null, options);
     },

@@ -18,45 +18,81 @@ describe('Backbone.Firebase.Model', function() {
     return expect(new Model()).to.be.ok;
   });
 
-  it('should call url fn when urlRoot and an id is provided', function() {
-    var spy = sinon.spy();
-    var Model = Backbone.Firebase.Model.extend({
-      urlRoot: 'Mock://',
-      url: spy
+  describe('#constructor', function() {
+
+    it('should call url fn when urlRoot and an id is provided', function() {
+      var spy = sinon.spy();
+      var Model = Backbone.Firebase.Model.extend({
+        urlRoot: 'Mock://',
+        url: spy
+      });
+
+      var model = new Model({
+        id: 1
+      });
+
+      return expect(spy.called).to.be.ok;
     });
 
-    var model = new Model({
-      id: 1
+    it('should throw an error if an invalid url is provided', function() {
+      var Model = Backbone.Firebase.Model.extend({
+        url: true
+      });
+      try {
+        var model = new Model();
+      } catch (err) {
+        assert(err.message === 'url parameter required');
+      }
     });
 
-    return expect(spy.called).to.be.ok;
   });
 
-  it('should throw an error if an invalid url is provided', function() {
-    var Model = Backbone.Firebase.Model.extend({
-      url: true
-    });
-    try {
-      var model = new Model();
-    } catch (err) {
-      assert(err.message === 'url parameter required');
-    }
-  });
+  describe('#destroy', function() {
 
-  // it('should build a url when urlRoot and an id is provided', function() {
-  //   var Model = Backbone.Firebase.Model.extend({
-  //     urlRoot: 'Mock://'
-  //   });
-  //
-  //   var model = new Model({
-  //     id: 1
-  //   });
-  //
-  //   // wat?
-  //   console.log('Model URL ->', model.url());
-  //
-  //   return expect(model.url()).should.equal('Mock://1');
-  // });
+    var model;
+    beforeEach(function() {
+      var Model = Backbone.Firebase.Model.extend({
+        urlRoot: 'Mock://'
+      });
+
+      model = new Model();
+    });
+
+    it('should trigger the destroy event', function() {
+      var spy = sinon.spy();
+
+      model.on('destroy', spy);
+
+      model.destroy();
+      model.firebase.flush();
+
+      expect(spy.calledOnce).to.be.ok;
+
+    });
+
+    it('should call _setToFirebase', function() {
+      sinon.spy(Backbone.Firebase, '_setToFirebase');
+
+      model.destroy();
+      model.firebase.flush();
+
+      expect(Backbone.Firebase._setToFirebase.calledOnce).to.be.ok;
+
+      Backbone.Firebase._setToFirebase.restore();
+    });
+
+    it('should call _onCompleteCheck', function() {
+      sinon.spy(Backbone.Firebase, '_onCompleteCheck');
+
+      model.destroy();
+      model.firebase.flush();
+
+      expect(Backbone.Firebase._onCompleteCheck.calledOnce).to.be.ok;
+
+      Backbone.Firebase._onCompleteCheck.restore();
+    });
+
+  });
 
   it('should update model', function() {
     // TODO: Test _updateModel
@@ -141,6 +177,146 @@ describe('Backbone.Firebase.Model', function() {
 
       model.get('id').should.equal(mockSnap.name());
     });
+  });
+
+  describe('SyncModel', function() {
+
+    var Model = null;
+
+    beforeEach(function() {
+      Model = Backbone.Firebase.Model.extend({
+        url: 'Mock://'
+      });
+    });
+
+    describe('ignored methods', function() {
+
+      beforeEach(function() {
+        sinon.spy(console, 'warn');
+      });
+
+      afterEach(function() {
+        console.warn.restore();
+      });
+
+      it('should do nothing when save is called', function() {
+        var model = new Model();
+        model.save();
+        return expect(console.warn.calledOnce).to.be.ok;
+      });
+
+      it('should do nothing when fetch is called', function() {
+        var model = new Model();
+        model.fetch();
+        return expect(console.warn.calledOnce).to.be.ok;
+      });
+
+      it('should do nothing when sync is called', function() {
+        var model = new Model();
+        model.sync();
+        return expect(console.warn.calledOnce).to.be.ok;
+      });
+
+    });
+
+    describe('#constructor', function() {
+
+      it('should call sync when model is set', function() {
+        var spy = sinon.spy();
+
+        var model = new Model();
+
+        model.on('sync', spy);
+
+        model.set('ok', 'ok');
+        model.firebase.flush();
+
+        return expect(spy.called).to.be.ok;
+      });
+
+      it('should set up a Firebase value listener', function() {
+        var spy = sinon.spy();
+
+        var model = new Model();
+        model.firebase.on('value', spy);
+        model.firebase.flush();
+
+        return expect(spy.called).to.be.ok;
+      });
+
+      it('should listen for local changes', function() {
+        var model = new Model();
+        var spy = sinon.spy();
+
+        model._listenLocalChange(spy);
+
+        model.set('ok', 'ok');
+        model.firebase.flush();
+
+        return expect(spy.called).to.be.ok;
+      });
+
+    });
+
+  });
+
+  describe('OnceModel', function() {
+
+    describe('#constructor', function(){
+
+      it('should call _listenLocalChange', function() {
+        sinon.spy(Backbone.Firebase.Model.prototype, '_listenLocalChange');
+
+        var Model = Backbone.Firebase.Model.extend({
+          url: 'Mock://',
+          autoSync: false
+        });
+        model = new Model();
+
+        expect(Backbone.Firebase.Model.prototype._listenLocalChange.calledOnce).to.be.ok;
+        Backbone.Firebase.Model.prototype._listenLocalChange.restore();
+      });
+
+      it('should listen for local changes', function() {
+        var Model = Backbone.Firebase.Model.extend({
+          url: 'Mock://',
+          autoSync: false
+        });
+
+        var model = new Model();
+        var spy = sinon.spy();
+
+        model._listenLocalChange(spy);
+
+        model.set('ok', 'ok');
+        model.firebase.flush();
+
+        return expect(spy.called).to.be.ok;
+      });
+
+    });
+
+    describe('#sync', function() {
+
+      // Backbone.Firebase.Model.sync should proxy to Backbone.Firebase.sync
+      // if it comes from a OnceModel
+      it('should call Backbone.Firebase.sync', function() {
+        sinon.spy(Backbone.Firebase, 'sync');
+
+        var Model = Backbone.Firebase.Model.extend({
+          url: 'Mock://',
+          autoSync: false
+        });
+        model = new Model();
+
+        model.sync('read', model, null);
+
+        expect(Backbone.Firebase.sync.calledOnce).to.be.ok;
+        Backbone.Firebase.sync.restore();
+      });
+
+    });
+
   });
 
   describe('autoSync options', function() {
@@ -238,146 +414,6 @@ describe('Backbone.Firebase.Model', function() {
       });
       var model = new Model({}, { autoSync: false });
       return expect(model.autoSync).to.be.false;
-    });
-
-  });
-
-  describe('autoSync:true', function() {
-
-    var Model = null;
-
-    beforeEach(function() {
-      Model = Backbone.Firebase.Model.extend({
-        url: 'Mock://'
-      });
-    });
-
-    describe('ignored methods', function() {
-
-      beforeEach(function() {
-        sinon.spy(console, 'warn');
-      });
-
-      afterEach(function() {
-        console.warn.restore();
-      });
-
-      it('should do nothing when save is called', function() {
-        var model = new Model();
-        model.save();
-        return expect(console.warn.calledOnce).to.be.ok;
-      });
-
-      it('should do nothing when fetch is called', function() {
-        var model = new Model();
-        model.fetch();
-        return expect(console.warn.calledOnce).to.be.ok;
-      });
-
-      it('should do nothing when sync is called', function() {
-        var model = new Model();
-        model.sync();
-        return expect(console.warn.calledOnce).to.be.ok;
-      });
-
-    });
-
-    it('should call sync when model is set', function() {
-      var spy = sinon.spy();
-
-      var model = new Model();
-
-      model.on('sync', spy);
-
-      model.set('ok', 'ok');
-      model.firebase.flush();
-
-      return expect(spy.called).to.be.ok;
-    });
-
-    it('should set up a Firebase value listener', function() {
-      var spy = sinon.spy();
-
-      var model = new Model();
-      model.firebase.on('value', spy);
-      model.firebase.flush();
-
-      return expect(spy.called).to.be.ok;
-    });
-
-    it('should listen for local changes', function() {
-      var model = new Model();
-      var spy = sinon.spy();
-
-      model._listenLocalChange(spy);
-
-      model.set('ok', 'ok');
-      model.firebase.flush();
-
-      return expect(spy.called).to.be.ok;
-    });
-
-  });
-
-  describe('autoSync:false', function() {
-
-    describe('OnceModel', function() {
-
-      describe('#constructor', function(){
-
-        it('should call _listenLocalChange', function() {
-          sinon.spy(Backbone.Firebase.Model.prototype, '_listenLocalChange');
-
-          var Model = Backbone.Firebase.Model.extend({
-            url: 'Mock://',
-            autoSync: false
-          });
-          model = new Model();
-
-          expect(Backbone.Firebase.Model.prototype._listenLocalChange.calledOnce).to.be.ok;
-          Backbone.Firebase.Model.prototype._listenLocalChange.restore();
-        });
-
-        it('should call Backbone.Firebase.Model.prototype.set', function() {
-          sinon.spy(Backbone.Firebase.Model.prototype, 'set');
-
-          var Model = Backbone.Firebase.Model.extend({
-            url: 'Mock://',
-            autoSync: false
-          });
-          model = new Model();
-
-          expect(Backbone.Firebase.Model.prototype.set.calledOnce).to.be.ok;
-          Backbone.Firebase.Model.prototype.set.restore();
-        });
-
-      });
-
-      describe('#sync', function() {
-
-        // Backbone.Firebase.Model.sync should proxy to Backbone.Firebase.sync
-        // if it comes from a OnceModel
-        it('should call Backbone.Firebase.sync', function() {
-          sinon.spy(Backbone.Firebase, 'sync');
-
-          var Model = Backbone.Firebase.Model.extend({
-            url: 'Mock://',
-            autoSync: false
-          });
-          model = new Model();
-
-          model.sync('read', model, null);
-
-          expect(Backbone.Firebase.sync.calledOnce).to.be.ok;
-          Backbone.Firebase.sync.restore();
-        });
-
-      });
-
-    });
-
-    it('should silently set update values locally', function() {
-      // TODO: Test _listenLocalChange to silently update
     });
 
   });
