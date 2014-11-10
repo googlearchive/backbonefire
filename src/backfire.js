@@ -37,23 +37,11 @@
 
     } else if (method === 'create') {
 
-      Backbone.Firebase._setToFirebase(
-        model.firebase,
-        modelJSON,
-        function(err) {
-          Backbone.Firebase._onCompleteCheck(err, modelJSON, options);
-        }
-      );
+      Backbone.Firebase._setWithCheck(model.firebase, modelJSON, options);
 
     } else if (method === 'update') {
 
-      Backbone.Firebase._updateToFirebase(
-        model.firebase,
-        modelJSON,
-        function(err) {
-          Backbone.Firebase._onCompleteCheck(err, modelJSON, options);
-        }
-      );
+      Backbone.Firebase._updateWithCheck(model.firebase, modelJSON, options);
 
     }
 
@@ -74,12 +62,27 @@
   Backbone.Firebase._onCompleteCheck = function(err, item, options) {
     if(!options) { return; }
 
-    if(err) {
+    if(err && options.error) {
       options.error(item, err, options);
-    } else {
+    } else if(options.success) {
       options.success(item, null, options);
     }
+  };
 
+  Backbone.Firebase._setWithCheck = function(ref, item, options) {
+    Backbone.Firebase._setToFirebase(ref, item, function(err) {
+      Backbone.Firebase._onCompleteCheck(err, item, options);
+    });
+  };
+
+  Backbone.Firebase._updateWithCheck = function(ref, item, options) {
+    Backbone.Firebase._updateToFirebase(ref, item, function(err) {
+      Backbone.Firebase._onCompleteCheck(err, item, options);
+    });
+  };
+
+  Backbone.Firebase._throwError = function(message) {
+    throw new Error(message);
   };
 
   // Model responsible for autoSynced objects
@@ -167,7 +170,7 @@
         this.firebase = new Firebase(this.url());
         break;
       default:
-        throw new Error('url parameter required');
+        Backbone.Firebase._throwError('url parameter required');
       }
 
       if(!this.autoSync) {
@@ -182,21 +185,7 @@
 
     destroy: function(options) {
       options = _.extend({}, options);
-      this.firebase.set(null, function(err) {
-        if(err) {
-
-          if(options.error) {
-            options.error(this, err, options);
-          }
-
-        } else {
-
-          if(options.success) {
-            options.success(this, null, options);
-          }
-
-        }
-      });
+      Backbone.Firebase._setWithCheck(this.firebase, null, options);
       this.trigger('destroy', this, null, options);
     },
 
@@ -341,9 +330,6 @@
         if (options.wait) {
           this._log("Wait option provided to create, ignoring.");
         }
-        model = Backbone.Collection.prototype._prepareModel.apply(
-          this, [model, options]
-        );
         if (!model) {
           return false;
         }
@@ -359,11 +345,12 @@
 
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
-          var childRef = this.firebase.ref().child(model.id);
+          var childRef = this.firebase.child(model.id);
           if (options.silent === true) {
             this._suppressEvent = true;
           }
-          childRef.set(null, _.bind(options.success, model));
+          Backbone.Firebase._setWithCheck(childRef, null, options);
+          //childRef.set(null, _.bind(options.success, model));
         }
 
         return parsed;
@@ -377,7 +364,7 @@
         var ret = this.add(models, {silent: true});
         // Trigger "reset" event.
         if (!options.silent) {
-          this.trigger("reset", this, options);
+          this.trigger('reset', this, options);
         }
         return ret;
       },
@@ -560,8 +547,8 @@
         options = options ? _.clone(options) : {};
         options.success =
           _.isFunction(options.success) ? options.success : function() {};
-        var childRef = this.firebase.ref().child(model.id);
-        childRef.set(null, _.bind(options.success, model));
+        var childRef = this.firebase.child(model.id);
+        Backbone.Firebase._setWithCheck(childRef, null, _.bind(options.success, model));
       },
 
       _preventSync: function(model, state) {

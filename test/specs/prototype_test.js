@@ -157,28 +157,79 @@ describe('Backbone.Firebase', function() {
 
     });
 
-    describe('#sync("create", ...)', function() {
+    describe('#_setWithCheck', function() {
 
-      // create
-      // - set to firebase
       it('should call Backbone.Firebase._setToFirebase', function() {
         sinon.spy(Backbone.Firebase, '_setToFirebase');
-        Backbone.Firebase.sync('create', model, null);
+        Backbone.Firebase._setWithCheck(model.firebase, null, null);
         expect(Backbone.Firebase._setToFirebase.calledOnce).to.be.ok;
         Backbone.Firebase._setToFirebase.restore();
+      });
+
+      // test that _onCompleteCheck is called
+      it('should call Backbone.Firebase._onCompleteCheck', function() {
+        sinon.spy(Backbone.Firebase, '_onCompleteCheck');
+        Backbone.Firebase._setWithCheck(model.firebase, null, null);
+        model.firebase.flush();
+        expect(Backbone.Firebase._onCompleteCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._onCompleteCheck.restore();
+      });
+
+    });
+
+
+    describe('#sync("create", ...)', function() {
+
+      it('should call Backbone.Firebase._onCompleteCheck', function() {
+        sinon.spy(Backbone.Firebase, '_onCompleteCheck');
+        Backbone.Firebase.sync('create', model, null);
+        model.firebase.flush();
+        expect(Backbone.Firebase._onCompleteCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._onCompleteCheck.restore();
+      });
+
+      it('should call Backbone.Firebase._setWithCheck', function() {
+        sinon.spy(Backbone.Firebase, '_setWithCheck');
+        Backbone.Firebase.sync('create', model, null);
+        model.firebase.flush();
+        expect(Backbone.Firebase._setWithCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._setWithCheck.restore();
       });
 
     });
 
     describe('#sync("update", ...)', function() {
       // update
-      // - update to firebase
-      it('should call Backbone.Firebase._updateToFirebase', function() {
-        sinon.spy(Backbone.Firebase, '_updateToFirebase');
+
+      // test that _onCompleteCheck is called
+      it('should call Backbone.Firebase._onCompleteCheck', function() {
+        sinon.spy(Backbone.Firebase, '_onCompleteCheck');
         Backbone.Firebase.sync('update', model, null);
-        expect(Backbone.Firebase._updateToFirebase.calledOnce).to.be.ok;
-        Backbone.Firebase._updateToFirebase.restore();
+        model.firebase.flush();
+        expect(Backbone.Firebase._onCompleteCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._onCompleteCheck.restore();
       });
+
+      it('should call Backbone.Firebase._updateWithCheck', function() {
+        sinon.spy(Backbone.Firebase, '_updateWithCheck');
+        Backbone.Firebase.sync('update', model, null);
+        model.firebase.flush();
+        expect(Backbone.Firebase._updateWithCheck.calledOnce).to.be.ok;
+        Backbone.Firebase._updateWithCheck.restore();
+      });
+
+    });
+
+  });
+
+  describe('#_throwError', function() {
+
+    it('should throw and catch an error', function() {
+      try {
+        Backbone.Firebase._throwError('Error');
+      } catch (err) {
+        expect(err).to.be.defined;
+      }
     });
 
   });
