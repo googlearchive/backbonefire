@@ -165,7 +165,7 @@ describe('Backbone.Firebase.Collection', function() {
 
   });
 
-  describe('autoSync:true', function() {
+  describe('SyncCollection', function() {
 
     it('should enable autoSync by default', function() {
       var Model = Backbone.Firebase.Collection.extend({
@@ -521,24 +521,56 @@ describe('Backbone.Firebase.Collection', function() {
 
   });
 
-  describe('autoSync:false', function() {
+  describe('OnceCollection', function() {
 
-    it('should not call sync when added', function() {
-      var spy = sinon.spy();
-      var Models = Backbone.Firebase.Collection.extend({
+    var collection;
+    beforeEach(function() {
+      var Collection = Backbone.Firebase.Collection.extend({
         url: 'Mock://',
         autoSync: false
       });
 
-      var models = new Models();
+      collection = new Collection();
+    });
 
-      models.on('sync', spy);
+    it('should not call sync when added', function() {
+      var spy = sinon.spy();
 
-      models.add({ title: 'blah' });
+      collection.on('sync', spy);
 
-      models.firebase.flush();
+      collection.add({ title: 'blah' });
+
+      collection.firebase.flush();
 
       return expect(spy.called).to.be.false;
+    });
+
+    describe('#create', function() {
+
+      it('should call Backbone.Collection.prototype.create', function() {
+        sinon.spy(Backbone.Collection.prototype, 'create');
+
+        collection.create({});
+        collection.firebase.flush();
+
+        expect(Backbone.Collection.prototype.create.calledOnce).to.be.ok;
+
+        Backbone.Collection.prototype.create.restore();
+      });
+
+    });
+
+    describe('#add', function() {
+      it('should call Backbone.Collection.prototype.add', function() {
+        sinon.spy(Backbone.Collection.prototype, 'add');
+
+        collection.add({});
+        collection.firebase.flush();
+
+        expect(Backbone.Collection.prototype.add.calledOnce).to.be.ok;
+
+        Backbone.Collection.prototype.add.restore();
+      });
     });
 
   });

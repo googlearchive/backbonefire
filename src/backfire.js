@@ -37,23 +37,11 @@
 
     } else if (method === 'create') {
 
-      Backbone.Firebase._setToFirebase(
-        model.firebase,
-        modelJSON,
-        function(err) {
-          Backbone.Firebase._onCompleteCheck(err, modelJSON, options);
-        }
-      );
+      Backbone.Firebase._setWithCheck(model.firebase, modelJSON, options);
 
     } else if (method === 'update') {
 
-      Backbone.Firebase._updateToFirebase(
-        model.firebase,
-        modelJSON,
-        function(err) {
-          Backbone.Firebase._onCompleteCheck(err, modelJSON, options);
-        }
-      );
+      Backbone.Firebase._updateWithCheck(model.firebase, modelJSON, options);
 
     }
 
@@ -79,6 +67,18 @@
     } else if(options.success) {
       options.success(item, null, options);
     }
+  };
+
+  Backbone.Firebase._setWithCheck = function(ref, item, options) {
+    Backbone.Firebase._setToFirebase(ref, item, function(err) {
+      Backbone.Firebase._onCompleteCheck(err, item, options);
+    });
+  };
+
+  Backbone.Firebase._updateWithCheck = function(ref, item, options) {
+    Backbone.Firebase._updateToFirebase(ref, item, function(err) {
+      Backbone.Firebase._onCompleteCheck(err, item, options);
+    });
   };
 
   Backbone.Firebase._throwError = function(message) {
@@ -185,9 +185,7 @@
 
     destroy: function(options) {
       options = _.extend({}, options);
-      Backbone.Firebase._setToFirebase(this.firebase, null, function(err) {
-        Backbone.Firebase._onCompleteCheck(err, null, options);
-      });
+      Backbone.Firebase._setWithCheck(this.firebase, null, options);
       this.trigger('destroy', this, null, options);
     },
 
