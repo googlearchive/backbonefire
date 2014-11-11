@@ -18,16 +18,6 @@ describe('Backbone.Firebase.Collection', function() {
     return expect(new Collection()).to.be.ok;
   });
 
-  // call url function
-  it('should call the url property as a function', function() {
-    var spy = sinon.spy();
-    var Collection = Backbone.Firebase.Collection.extend({
-      url: spy
-    });
-    var collection = new Collection();
-    expect(spy.calledOnce).to.be.true;
-  });
-
   // throw err
   it('should throw an error if an invalid url is provided', function() {
     var Collection = Backbone.Firebase.Collection.extend({

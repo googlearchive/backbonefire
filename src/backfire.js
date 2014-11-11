@@ -177,10 +177,10 @@
 
       switch (typeof this.url) {
       case 'string':
-        this.firebase = new Firebase(this.url);
+        this.firebase = Backbone.Firebase._determineRef(this.url);
         break;
       case 'function':
-        this.firebase = new Firebase(this.url());
+        this.firebase = Backbone.Firebase._determineRef(this.url());
         break;
       default:
         Backbone.Firebase._throwError('url parameter required');
@@ -581,10 +581,10 @@
 
       switch (typeof this.url) {
       case 'string':
-        this.firebase = new Firebase(this.url);
+        this.firebase = Backbone.Firebase._determineRef(this.url);
         break;
       case 'function':
-        this.firebase = new Firebase(this.url());
+        this.firebase = Backbone.Firebase._determineRef(this.url());
         break;
       default:
         throw new Error('url parameter required');
