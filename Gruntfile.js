@@ -75,6 +75,13 @@ module.exports = function(grunt) {
         autowatch: false,
         singleRun: true
       }
+    },
+
+    copy: {
+      main: {
+        src: 'src/backfire.js',
+        dest: 'examples/todos/backfire.js',
+      },
     }
   });
 
@@ -84,10 +91,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-copy');
 
   // Unit tests
   grunt.registerTask('test', ['karma:unit']);
 
-  grunt.registerTask('build', ['jshint', 'concat', 'uglify']);
+  grunt.registerTask('build', ['jshint', 'concat', 'uglify', 'copy']);
   grunt.registerTask('default', ['build', 'test']);
 };

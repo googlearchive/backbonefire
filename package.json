@@ -55,7 +55,8 @@
     "karma-spec-reporter": "0.0.13",
     "mocha": "~1.14.0",
     "requirejs": "~2.1.9",
-    "karma-chrome-launcher": "^0.1.4"
+    "karma-chrome-launcher": "^0.1.4",
+    "grunt-copy": "^0.1.0"
   },
   "scripts": {
     "test": "grunt test",

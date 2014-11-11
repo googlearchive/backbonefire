@@ -3,7 +3,7 @@
  * bindings let you use special model and collection types that allow for
  * synchronizing data with Firebase.
  *
- * BackFire 0.4.0
+ * BackFire 0.0.0
  * https://github.com/firebase/backfire/
  * License: MIT
  */
