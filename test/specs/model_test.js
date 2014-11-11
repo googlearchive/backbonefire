@@ -31,6 +31,17 @@ describe('Backbone.Firebase.Model', function() {
       }
     });
 
+    it('should call Backbone.Firebase._determineRef with url as a Firebase reference', function() {
+      sinon.spy(Backbone.Firebase, '_determineRef');
+      var ref = new Firebase('Mock://');
+      var Model = Backbone.Firebase.Model.extend({
+        url: ref
+      });
+      var model = new Model();
+      expect(Backbone.Firebase._determineRef.calledOnce).to.be.ok;
+      Backbone.Firebase._determineRef.restore();
+    });
+
   });
 
   describe('#destroy', function() {

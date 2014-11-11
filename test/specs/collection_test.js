@@ -30,6 +30,50 @@ describe('Backbone.Firebase.Collection', function() {
     }
   });
 
+  it('should call Backbone.Firebase._determineRef with url as a function', function() {
+    sinon.spy(Backbone.Firebase, '_determineRef');
+    var Collection = Backbone.Firebase.Collection.extend({
+      url: function() {
+        return '';
+      }
+    });
+    var collection = new Collection();
+    expect(Backbone.Firebase._determineRef.calledOnce).to.be.ok;
+    Backbone.Firebase._determineRef.restore();
+  });
+
+  it('should call Backbone.Firebase._determineRef with url as a string', function() {
+    sinon.spy(Backbone.Firebase, '_determineRef');
+    var Collection = Backbone.Firebase.Collection.extend({
+      url: 'Mock://'
+    });
+    var collection = new Collection();
+    expect(Backbone.Firebase._determineRef.calledOnce).to.be.ok;
+    Backbone.Firebase._determineRef.restore();
+  });
+
+  it('should call Backbone.Firebase._determineRef with url as a Firebase reference', function() {
+    sinon.spy(Backbone.Firebase, '_determineRef');
+    var ref = new Firebase('Mock://');
+    var Collection = Backbone.Firebase.Collection.extend({
+      url: ref
+    });
+    var collection = new Collection();
+    expect(Backbone.Firebase._determineRef.calledOnce).to.be.ok;
+    Backbone.Firebase._determineRef.restore();
+  });
+
+  it('should call Backbone.Firebase._determineRef with url as a fn returning a Firebase reference', function() {
+    sinon.spy(Backbone.Firebase, '_determineRef');
+    var Collection = Backbone.Firebase.Collection.extend({
+      url: function() {
+        return new Firebase('Mock://');
+      }
+    });
+    var collection = new Collection();
+    expect(Backbone.Firebase._determineRef.calledOnce).to.be.ok;
+    Backbone.Firebase._determineRef.restore();
+  });
 
   describe('#_compareAttributes', function() {
     // should null remotely out deleted values

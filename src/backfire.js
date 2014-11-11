@@ -182,6 +182,9 @@
       case 'function':
         this.firebase = Backbone.Firebase._determineRef(this.url());
         break;
+      case 'object':
+        this.firebase = Backbone.Firebase._determineRef(this.url);
+        break;
       default:
         Backbone.Firebase._throwError('url parameter required');
       }
@@ -585,6 +588,9 @@
         break;
       case 'function':
         this.firebase = Backbone.Firebase._determineRef(this.url());
+        break;
+      case 'object':
+        this.firebase = Backbone.Firebase._determineRef(this.url);
         break;
       default:
         throw new Error('url parameter required');
