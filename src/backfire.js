@@ -85,6 +85,21 @@
     throw new Error(message);
   };
 
+  // string - return new Firebase
+  // object - assume ref and return
+  Backbone.Firebase._determineRef = function(objOrString) {
+    switch (typeof(objOrString)) {
+    case 'string':
+      return new Firebase(objOrString);
+      break;
+    case 'object':
+      return objOrString;
+      break;
+    default:
+      Backbone.Firebase._throwError('Invalid type passed to url property');
+    }
+  };
+
   // Model responsible for autoSynced objects
   // This model is never directly used. The Backbone.Firebase.Model will
   // inherit from this if it is an autoSynced model
