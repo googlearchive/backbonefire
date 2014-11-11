@@ -91,10 +91,8 @@
     switch (typeof(objOrString)) {
     case 'string':
       return new Firebase(objOrString);
-      break;
     case 'object':
       return objOrString;
-      break;
     default:
       Backbone.Firebase._throwError('Invalid type passed to url property');
     }
