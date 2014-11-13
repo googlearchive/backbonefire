@@ -11,8 +11,5 @@
     "Firebase"
   ],
   "author": "",
-  "license": "MIT",
-  "devDependencies": {
-    "gulp": "^3.8.10"
-  }
+  "license": "MIT"
 }
