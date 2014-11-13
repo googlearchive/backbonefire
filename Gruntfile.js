@@ -80,7 +80,7 @@ module.exports = function(grunt) {
     copy: {
       main: {
         src: 'src/backfire.js',
-        dest: 'examples/todos/backfire.js',
+        dest: 'examples/todos/lib/backfire.js',
       },
     }
   });
