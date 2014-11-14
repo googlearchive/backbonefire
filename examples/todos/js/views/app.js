@@ -3,11 +3,10 @@ define([
 	'jquery',
 	'underscore',
 	'backbone',
-	'collections/todos',
 	'views/todos',
 	'text!templates/stats.html',
 	'common'
-], function ($, _, Backbone, Todos, TodoView, statsTemplate, Common) {
+], function ($, _, Backbone, TodoView, statsTemplate, Common) {
 	'use strict';
 
 	// Our overall **AppView** is the top-level piece of UI.
@@ -27,7 +26,7 @@ define([
 			'click #toggle-all':		'toggleAllComplete'
 		},
 
-		// At initialization we bind to the relevant events on the `Todos`
+		// At initialization we bind to the relevant events on the `this.collection`
 		// collection, when items are added or changed. Kick things off by
 		// loading any preexisting todos that might be saved in *localStorage*.
 		initialize: function () {
@@ -37,22 +36,22 @@ define([
 			this.$main = this.$('#main');
 			this.$todoList = this.$('#todo-list');
 
-			this.listenTo(Todos, 'add', this.addOne);
-			this.listenTo(Todos, 'reset', this.addAll);
-			this.listenTo(Todos, 'change:completed', this.filterOne);
-			this.listenTo(Todos, 'filter', this.filterAll);
-			this.listenTo(Todos, 'all', this.render);
+			this.listenTo(this.collection, 'add', this.addOne);
+			this.listenTo(this.collection, 'reset', this.addAll);
+			this.listenTo(this.collection, 'change:completed', this.filterOne);
+			this.listenTo(this.collection, 'filter', this.filterAll);
+			this.listenTo(this.collection, 'all', this.render);
 
-			Todos.fetch({reset:true});
+			this.collection.fetch({reset:true});
 		},
 
 		// Re-rendering the App just means refreshing the statistics -- the rest
 		// of the app doesn't change.
 		render: function () {
-			var completed = Todos.completed().length;
-			var remaining = Todos.remaining().length;
+			var completed = this.collection.completed().length;
+			var remaining = this.collection.remaining().length;
 
-			if (Todos.length) {
+			if (this.collection.length) {
 				this.$main.show();
 				this.$footer.show();
 
@@ -80,10 +79,10 @@ define([
 			this.$todoList.append(view.render().el);
 		},
 
-		// Add all items in the **Todos** collection at once.
+		// Add all items in the **this.collection** collection at once.
 		addAll: function () {
 			this.$todoList.empty();
-			Todos.each(this.addOne, this);
+			this.collection.each(this.addOne, this);
 		},
 
 		filterOne: function (todo) {
@@ -91,14 +90,14 @@ define([
 		},
 
 		filterAll: function () {
-			Todos.each(this.filterOne, this);
+			this.collection.each(this.filterOne, this);
 		},
 
 		// Generate the attributes for a new Todo item.
 		newAttributes: function () {
 			return {
 				title: this.$input.val().trim(),
-				order: Todos.nextOrder(),
+				order: 0,
 				completed: false
 			};
 		},
@@ -110,20 +109,20 @@ define([
 				return;
 			}
 
-			Todos.create(this.newAttributes());
+			this.collection.create(this.newAttributes());
 			this.$input.val('');
 		},
 
 		// Clear all completed todo items, destroying their models.
 		clearCompleted: function () {
-			_.invoke(Todos.completed(), 'destroy');
+			_.invoke(this.collection.completed(), 'destroy');
 			return false;
 		},
 
 		toggleAllComplete: function () {
 			var completed = this.allCheckbox.checked;
 
-			Todos.each(function (todo) {
+			this.collection.each(function (todo) {
 				todo.save({
 					completed: completed
 				});

@@ -72,7 +72,7 @@ define([
 			var trimmedValue = value.trim();
 
 			if (trimmedValue) {
-				this.model.save({ title: trimmedValue });
+				this.model.set({ title: trimmedValue });
 
 				if (value !== trimmedValue) {
 					// Model values changes consisting of whitespaces only are not causing change to be triggered

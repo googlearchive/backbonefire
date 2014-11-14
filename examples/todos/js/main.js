@@ -15,31 +15,28 @@ require.config({
 				'jquery'
 			],
 			exports: 'Backbone'
-		},
-		backboneLocalstorage: {
-			deps: ['backbone'],
-			exports: 'Store'
 		}
 	},
 	paths: {
 		jquery: '../bower_components/jquery/jquery',
 		underscore: '../bower_components/underscore/underscore',
 		backbone: '../bower_components/backbone/backbone',
-		backboneLocalstorage: '../bower_components/backbone.localStorage/backbone.localStorage',
-		text: '../bower_components/requirejs-text/text'
+		text: '../bower_components/requirejs-text/text',
+		firebase: 'firebase',
+		backfire: 'backfire'
 	}
 });
 
 require([
 	'backbone',
 	'views/app',
-	'routers/router'
-], function (Backbone, AppView, Workspace) {
+	'routers/router',
+	'collections/todos'
+], function (Backbone, AppView, Workspace, Todos) {
 	/*jshint nonew:false*/
 	// Initialize routing and start Backbone.history()
 	new Workspace();
 	Backbone.history.start();
-
 	// Initialize the application view
-	new AppView();
+	new AppView({ collection: Todos });
 });

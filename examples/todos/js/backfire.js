@@ -8,8 +8,13 @@
  * License: MIT
  */
 
-(function(_, Backbone) {
-  "use strict";
+/*global define*/
+/*global define*/
+define([
+  'underscore',
+  'backbone'
+], function (_, Backbone) {
+  'use strict';
 
   Backbone.Firebase = {
     _determineAutoSync: function(self, options) {
@@ -43,6 +48,8 @@
 
       Backbone.Firebase._updateWithCheck(model.firebase, modelJSON, options);
 
+    } else if(method === 'delete') {
+      model.trigger('destroy', model, options);
     }
 
   };
@@ -151,6 +158,7 @@
 
     // Determine whether the realtime or once methods apply
     constructor: function(model, options) {
+      debugger;
       var defaults = _.result(this, 'defaults');
 
       // Apply defaults only after first sync.
@@ -252,6 +260,12 @@
 
   });
 
+  Backbone.Firebase.Model.protoype = {
+    sync: function(method, model, options) {
+      Backbone.Firebase.sync(method, model, options);
+    }
+  };
+
   var OnceCollection = (function() {
     function OnceCollection() {
 
@@ -266,6 +280,9 @@
         model.id = this.firebase.push().name();
         options = _.extend({ autoSync: false }, options);
         return Backbone.Collection.prototype.add.apply(this, [model, options]);
+      },
+      sync: function(method, model, options) {
+        Backbone.Firebase.sync(method, model, options);
       }
     };
 
@@ -544,6 +561,7 @@
 
       // Triggered when model.destroy() is called on one of the children.
       _removeModel: function(model, collection, options) {
+        debugger;
         options = options ? _.clone(options) : {};
         options.success =
           _.isFunction(options.success) ? options.success : function() {};
@@ -580,8 +598,6 @@
       // if we are not autoSyncing, the model needs
       // to be a non-autoSynced model
       if(!this.autoSync) {
-        this.model = Backbone.Firebase.Model;
-
         _.extend(this, OnceCollection.protoype);
         OnceCollection.apply(this, arguments);
       } else {
@@ -589,10 +605,12 @@
         SyncCollection.apply(this, arguments);
       }
 
+      this.model = this.model.extend(Backbone.Firebase.Model.protoype);
 
     }
 
   });
 
-})(window._, window.Backbone);
-.
+  return Backbone.Firebase
+
+});

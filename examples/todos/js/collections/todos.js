@@ -2,17 +2,19 @@
 define([
 	'underscore',
 	'backbone',
-	'backboneLocalstorage',
-	'models/todo'
-], function (_, Backbone, Store, Todo) {
+	'models/todo',
+	'firebase',
+	'backfire'
+], function (_, Backbone, Todo) {
 	'use strict';
 
-	var TodosCollection = Backbone.Collection.extend({
+	var TodosCollection = Backbone.Firebase.Collection.extend({
 		// Reference to this collection's model.
+
 		model: Todo,
 
 		// Save all of the todo items under the `"todos"` namespace.
-		localStorage: new Store('todos-backbone'),
+		url: 'https://backbonefire.firebaseio.com/todos',
 
 		// Filter down the list of all todo items that are finished.
 		completed: function () {
