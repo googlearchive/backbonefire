@@ -49,7 +49,9 @@ define([
       Backbone.Firebase._updateWithCheck(model.firebase, modelJSON, options);
 
     } else if(method === 'delete') {
-      model.trigger('destroy', model, options);
+
+      Backbone.Firebase._setWithCheck(model.firebase, null, options);
+
     }
 
   };
@@ -260,12 +262,6 @@ define([
 
   });
 
-  Backbone.Firebase.Model.protoype = {
-    sync: function(method, model, options) {
-      Backbone.Firebase.sync(method, model, options);
-    }
-  };
-
   var OnceCollection = (function() {
     function OnceCollection() {
 
@@ -283,6 +279,26 @@ define([
       },
       sync: function(method, model, options) {
         Backbone.Firebase.sync(method, model, options);
+      },
+      fetch: function(options) {
+        options = options ? _.clone(options) : {};
+        if (options.parse === void 0) options.parse = true;
+        var success = options.success;
+        var collection = this;
+        options.success = function(resp) {
+          var arr = [];
+          var keys = _.keys(resp);
+          _.each(keys, function(key) {
+            arr.push(resp[key]);
+          });
+          var method = options.reset ? 'reset' : 'set';
+          collection[method](arr, options);
+          if (success) success(collection, arr, options);
+          options.autoSync = false;
+          options.url = this.url;
+          collection.trigger('sync', collection, arr, options);
+        };
+        return this.sync('read', this, options);
       }
     };
 
@@ -400,18 +416,19 @@ define([
         models = singular ? (models ? [models] : []) : models.slice();
 
         for (var i = 0; i < models.length; i++) {
+          var model = models[i];
+
+          if (!model.id) {
+            model.id = this.firebase.push().name();
+          }
 
           // call Backbone's prepareModel to apply options
-          var model = Backbone.Collection.prototype._prepareModel.apply(
-            this, [models[i], options || {}]
+          model = Backbone.Collection.prototype._prepareModel.apply(
+            this, [model, options || {}]
           );
 
           if (model.toJSON && typeof model.toJSON == "function") {
             model = model.toJSON();
-          }
-
-          if (!model.id) {
-            model.id = this.firebase.push().name();
           }
 
           pushArray.push(model);
@@ -580,6 +597,7 @@ define([
   Backbone.Firebase.Collection = Backbone.Collection.extend({
 
     constructor: function (model, options) {
+      var self = this;
       Backbone.Collection.apply(this, arguments);
 
       this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
@@ -605,8 +623,9 @@ define([
         SyncCollection.apply(this, arguments);
       }
 
-      this.model = this.model.extend(Backbone.Firebase.Model.protoype);
-
+      //this.model = Backbone.Firebase.Model.extend(this.model.prototype);
+      var customModel = _.extend(this.model.prototype, Backbone.Firebase.Model.prototype, { autoSync: false });
+      this.model = Backbone.Model.extend(customModel);
     }
 
   });

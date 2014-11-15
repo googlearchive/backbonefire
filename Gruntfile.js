@@ -107,7 +107,7 @@ module.exports = function(grunt) {
   // Unit tests
   grunt.registerTask('test', ['karma:unit']);
 
-  grunt.registerTask('build', ['jshint', 'concat', 'uglify', 'copy']);
+  grunt.registerTask('build', ['jshint', 'concat', 'uglify']);
   grunt.registerTask('default', ['build', 'test']);
   grunt.registerTask('todo', ['build', 'serve']);
 };

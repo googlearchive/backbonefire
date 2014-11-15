@@ -181,6 +181,7 @@ describe('Backbone.Firebase.Collection', function() {
       it('should prepare models', function() {
         var addedArray = collection.add({ firstname: 'Dave' });
         var addedObject = addedArray[0];
+        console.log(addedArray);
         expect(addedObject.addedFromCollection).to.be.ok;
       });
 
@@ -437,7 +438,7 @@ describe('Backbone.Firebase.Collection', function() {
 
         collection.models = [
           new Backbone.Model({
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           })
@@ -448,7 +449,7 @@ describe('Backbone.Firebase.Collection', function() {
       it('should unset local property from remote deletion', function() {
 
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
             name: 'David'
             // age has been removed

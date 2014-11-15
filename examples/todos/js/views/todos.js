@@ -40,7 +40,7 @@ define([
 
 			this.toggleVisible();
 			this.$input = this.$('.edit');
-			return this;
+			return this;{}
 		},
 
 		toggleVisible: function () {

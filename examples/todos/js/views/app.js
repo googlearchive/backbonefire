@@ -42,7 +42,7 @@ define([
 			this.listenTo(this.collection, 'filter', this.filterAll);
 			this.listenTo(this.collection, 'all', this.render);
 
-			this.collection.fetch({reset:true});
+			this.collection.fetch();
 		},
 
 		// Re-rendering the App just means refreshing the statistics -- the rest
