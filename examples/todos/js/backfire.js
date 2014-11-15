@@ -8,7 +8,10 @@
  * License: MIT
  */
 
-(function(_, Backbone) {
+define([
+  'underscore',
+  'backbone',
+], function (_, Backbone) {
   "use strict";
 
   Backbone.Firebase = {
@@ -87,19 +90,6 @@
 
   Backbone.Firebase._throwError = function(message) {
     throw new Error(message);
-  };
-
-  // string - return new Firebase
-  // object - assume ref and return
-  Backbone.Firebase._determineRef = function(objOrString) {
-    switch (typeof(objOrString)) {
-    case 'string':
-      return new Firebase(objOrString);
-    case 'object':
-      return objOrString;
-    default:
-      Backbone.Firebase._throwError('Invalid type passed to url property');
-    }
   };
 
   // Model responsible for autoSynced objects
@@ -182,13 +172,10 @@
 
       switch (typeof this.url) {
       case 'string':
-        this.firebase = Backbone.Firebase._determineRef(this.url);
+        this.firebase = new Firebase(this.url);
         break;
       case 'function':
-        this.firebase = Backbone.Firebase._determineRef(this.url());
-        break;
-      case 'object':
-        this.firebase = Backbone.Firebase._determineRef(this.url);
+        this.firebase = new Firebase(this.url());
         break;
       default:
         Backbone.Firebase._throwError('url parameter required');
@@ -624,13 +611,10 @@
 
       switch (typeof this.url) {
       case 'string':
-        this.firebase = Backbone.Firebase._determineRef(this.url);
+        this.firebase = new Firebase(this.url);
         break;
       case 'function':
-        this.firebase = Backbone.Firebase._determineRef(this.url());
-        break;
-      case 'object':
-        this.firebase = Backbone.Firebase._determineRef(this.url);
+        this.firebase = new Firebase(this.url());
         break;
       default:
         throw new Error('url parameter required');
@@ -668,4 +652,4 @@
 
   });
 
-})(window._, window.Backbone);
+});
