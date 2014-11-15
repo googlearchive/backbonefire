@@ -85,6 +85,19 @@
     throw new Error(message);
   };
 
+  // string - return new Firebase
+  // object - assume ref and return
+  Backbone.Firebase._determineRef = function(objOrString) {
+    switch (typeof(objOrString)) {
+    case 'string':
+      return new Firebase(objOrString);
+    case 'object':
+      return objOrString;
+    default:
+      Backbone.Firebase._throwError('Invalid type passed to url property');
+    }
+  };
+
   // Model responsible for autoSynced objects
   // This model is never directly used. The Backbone.Firebase.Model will
   // inherit from this if it is an autoSynced model
@@ -164,10 +177,13 @@
 
       switch (typeof this.url) {
       case 'string':
-        this.firebase = new Firebase(this.url);
+        this.firebase = Backbone.Firebase._determineRef(this.url);
         break;
       case 'function':
-        this.firebase = new Firebase(this.url());
+        this.firebase = Backbone.Firebase._determineRef(this.url());
+        break;
+      case 'object':
+        this.firebase = Backbone.Firebase._determineRef(this.url);
         break;
       default:
         Backbone.Firebase._throwError('url parameter required');
@@ -568,10 +584,13 @@
 
       switch (typeof this.url) {
       case 'string':
-        this.firebase = new Firebase(this.url);
+        this.firebase = Backbone.Firebase._determineRef(this.url);
         break;
       case 'function':
-        this.firebase = new Firebase(this.url());
+        this.firebase = Backbone.Firebase._determineRef(this.url());
+        break;
+      case 'object':
+        this.firebase = Backbone.Firebase._determineRef(this.url);
         break;
       default:
         throw new Error('url parameter required');

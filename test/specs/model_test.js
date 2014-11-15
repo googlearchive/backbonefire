@@ -20,20 +20,6 @@ describe('Backbone.Firebase.Model', function() {
 
   describe('#constructor', function() {
 
-    it('should call url fn when urlRoot and an id is provided', function() {
-      var spy = sinon.spy();
-      var Model = Backbone.Firebase.Model.extend({
-        urlRoot: 'Mock://',
-        url: spy
-      });
-
-      var model = new Model({
-        id: 1
-      });
-
-      return expect(spy.called).to.be.ok;
-    });
-
     it('should throw an error if an invalid url is provided', function() {
       var Model = Backbone.Firebase.Model.extend({
         url: true
@@ -43,6 +29,17 @@ describe('Backbone.Firebase.Model', function() {
       } catch (err) {
         assert(err.message === 'url parameter required');
       }
+    });
+
+    it('should call Backbone.Firebase._determineRef with url as a Firebase reference', function() {
+      sinon.spy(Backbone.Firebase, '_determineRef');
+      var ref = new Firebase('Mock://');
+      var Model = Backbone.Firebase.Model.extend({
+        url: ref
+      });
+      var model = new Model();
+      expect(Backbone.Firebase._determineRef.calledOnce).to.be.ok;
+      Backbone.Firebase._determineRef.restore();
     });
 
   });

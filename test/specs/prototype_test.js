@@ -234,4 +234,32 @@ describe('Backbone.Firebase', function() {
 
   });
 
+  describe('#_determineRef', function() {
+
+    // return new Firebase if string
+    it('should create a Firebase ref if a string is provided', function() {
+      sinon.spy(window, 'Firebase');
+      Backbone.Firebase._determineRef('Mock://');
+      expect(Firebase.calledOnce).to.be.ok;
+      window.Firebase.restore();
+    });
+
+    // return object if a ref
+    it('should return a Firebase ref if a ref is provided', function() {
+      var paramRef = new Firebase('Mock://');
+      var returnedRef = Backbone.Firebase._determineRef(paramRef);
+      assert(typeof(returnedRef) === 'object');
+    });
+
+    // throw error if not object or string
+    it('should throw an error if neither an object or string is provided', function() {
+      try {
+        Backbone.Firebase._determineRef(false);
+      } catch (error) {
+        assert(error.message === 'Invalid type passed to url property');
+      }
+    });
+
+  });
+
 });
