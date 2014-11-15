@@ -477,7 +477,7 @@
         var model = snap.val();
         if (!model.id) {
           if (!_.isObject(model)) {
-            model = {};
+            Backbone.Firebase._throwError('InvalidIdException: Models must have an Id. Note: You may be trying to sync a primitive value (int, string, bool).');
           }
           model.id = snap.name();
         }
@@ -646,9 +646,10 @@
         SyncCollection.apply(this, arguments);
       }
 
-      // intercept the users model and give it a firebase ref
-      // and have it listen to local changes silently to set
-      // unsetted attributes to null to be deleted on the server
+      // Intercept the given model and give it a firebase ref.
+      // Have it listen to local changes silently. When attributes
+      // are unset, the callback will set them to null so that they
+      // are removed on the Firebase server.
       this.model = function(attrs, opts) {
 
         var newItem = new BaseModel(attrs, opts);
