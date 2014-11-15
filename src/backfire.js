@@ -155,6 +155,7 @@
 
     // Determine whether the realtime or once methods apply
     constructor: function(model, options) {
+      Backbone.Model.apply(this, arguments);
       var defaults = _.result(this, 'defaults');
 
       // Apply defaults only after first sync.
@@ -162,7 +163,7 @@
         this.set(_.defaults(this.toJSON(), defaults));
       });
 
-      Backbone.Model.apply(this, arguments);
+
 
       this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
@@ -261,19 +262,30 @@
 
     }
     OnceCollection.protoype = {
+      // Create an id from a Firebase push-id and call Backbone.create, which
+      // will do prepare the models and trigger the proper events and then call
+      // Backbone.Firebase.sync with the correct method.
       create: function(model, options) {
         model.id = this.firebase.push().name();
         options = _.extend({ autoSync: false }, options);
         return Backbone.Collection.prototype.create.apply(this, [model, options]);
       },
+      // Create an id from a Firebase push-id and call Backbone.add, which
+      // will do prepare the models and trigger the proper events and then call
+      // Backbone.Firebase.sync with the correct method.
       add: function(model, options) {
         model.id = this.firebase.push().name();
         options = _.extend({ autoSync: false }, options);
         return Backbone.Collection.prototype.add.apply(this, [model, options]);
       },
+      // Proxy to Backbone.Firebase.sync
       sync: function(method, model, options) {
         Backbone.Firebase.sync(method, model, options);
       },
+      // Firebase returns lists as an object with keys, where Backbone
+      // collections require an array. This function modifies the existing
+      // Backbone.Collection.fetch method by mapping the returned object from
+      // Firebase to an array that Backbone can use.
       fetch: function(options) {
         options = options ? _.clone(options) : {};
         if (options.parse === void 0) { options.parse = true; }
@@ -590,7 +602,8 @@
 
     constructor: function (model, options) {
       Backbone.Collection.apply(this, arguments);
-
+      var self = this;
+      var BaseModel = self.model;
       this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
       switch (typeof this.url) {
@@ -614,14 +627,24 @@
         SyncCollection.apply(this, arguments);
       }
 
-      var customModel = _.extend(this.model.prototype, Backbone.Firebase.Model.prototype, {
-        autoSync: false,
-        constructor: function() {
-          debugger;
-          this.model.apply(this, arguments);
-        }
-      });
-      this.model = Backbone.Model.extend(customModel);
+      // intercept the users model and give it a firebase ref
+      // and have it listen to local changes silently to set
+      // unsetted attributes to null to be deleted on the server
+      this.model = function(attrs, opts) {
+
+        var newItem = new BaseModel(attrs, opts);
+        newItem.autoSync = false;
+        newItem.firebase = self.firebase.child(newItem.id);
+        newItem.sync = Backbone.Firebase.sync;
+        newItem.on('change', function(model) {
+          var updated = Backbone.Firebase.Model.prototype._updateModel(model);
+          model.set(updated, { silent: true });
+        });
+
+        return newItem;
+
+      };
+
     }
 
   });
