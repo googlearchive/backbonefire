@@ -3,31 +3,47 @@
 [![Build Status](https://travis-ci.org/firebase/backfire.svg?branch=master)](https://travis-ci.org/firebase/backfire)
 [![Version](https://badge.fury.io/gh/firebase%2Fbackfire.svg)](http://badge.fury.io/gh/firebase%2Fbackfire)
 
-BackFire is the officially supported [Backbone](http://backbonejs.org) binding for
-[Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire). The bindings let you use
-special model and collection types that will automatically synchronize with Firebase, and also
-allow you to use regular `Backbone.Sync` based synchronization methods.
-
+BackFire is the officially supported [Backbone](http://backbonejs.org) binding for Firebase. The bindings let you use special model and collection types that allow for synchronizing data with [Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire).
 
 ## Live Demo
 
-Play around with our [realtime Todo App demo](http://firebase.github.io/backfire/examples/todos/)
-which was created using BackFire.
+Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.com/). This Todo App is a simple port of the TodoMVC app using Backfire.
+
+## Basic Usage
+
+```javascript
+var Todo = Backbone.Model.extend({
+  defaults: {
+    completed: false,
+    title: 'New todo'
+  }
+});
+var Todos = Backbone.Firebase.Collection.extend({
+  url: 'https://<your-firebase>.firebaseio.com/todos',
+  model: Todo
+});
+```
 
 
 ## Downloading BackFire
 
-In order to use BackFire in your project, you need to include the following files in your HTML:
+To get started include Firebase and Backfire after the usual Backbone dependencies (jQuery, Underscore, and Backbone).
 
 ```html
+<!-- jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<!-- Underscore -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore.js"></script>
+
 <!-- Backbone -->
-<script src="http://backbonejs.org/backbone-min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone.js"></script>
 
 <!-- Firebase -->
-<script src="https://cdn.firebase.com/js/client/1.0.21/firebase.js"></script>
+<script src="https://cdn.firebase.com/js/client/2.0.3/firebase.js"></script>
 
 <!-- BackFire -->
-<script src="https://cdn.firebase.com/libs/backfire/0.3.0/backfire.min.js"></script>
+<script src="https://cdn.firebase.com/libs/backfire/0.5.0/backfire.js"></script>
 ```
 
 Use the URL above to download both the minified and non-minified versions of BackFire from the
@@ -42,8 +58,7 @@ You can also install BackFire via Bower and its dependencies will be downloaded 
 $ bower install backfire --save
 ```
 
-Once you've included BackFire and its dependencies into your project, you will have access to the
-`Backbone.Firebase`, `Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
+Once you've included BackFire and its dependencies into your project, you will have access to the `Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
 
 
 ## Getting Started with Firebase
@@ -51,76 +66,6 @@ Once you've included BackFire and its dependencies into your project, you will h
 BackFire requires Firebase in order to sync data. You can
 [sign up here](https://www.firebase.com/signup/?utm_medium=web&utm_source=backfire) for a free
 account.
-
-
-## Backbone.Firebase
-
-The bindings also override `Backbone.sync` to use Firebase. You may consider this option if you
-want to maintain an explicit seperation between _local_ and _remote_ data, and want to use regular
-Backbone models and collections.
-
-This adapter works very similarly to the
-[localStorage adapter](http://documentcloud.github.com/backbone/docs/backbone-localstorage.html)
-used in the canonical Todos example.
-
-Please see [todos-sync.js](https://github.com/firebase/backfire/blob/gh-pages/examples/todos/todos-sync.js)
-for an example of how to use this feature.
-
-### firebase
-
-You simply provide a `firebase` property in your collection, and that set of objects will be
-persisted at that location.
-
-```javascript
-var TodoList = Backbone.Collection.extend({
-  model: Todo,
-  firebase: new Backbone.Firebase("https://<your-firebase>.firebaseio.com")
-});
-```
-
-You can also do this with a model:
-
-```javascript
-var MyTodo = Backbone.Model.extend({
-  firebase: new Backbone.Firebase("https://<your-firebase>.firebaseio.com/myTodo")
-});
-```
-
-### fetch()
-
-In a collection with the `firebase` property defined, calling `fetch()` will retrieve data from
-Firebase and update the collection with its contents.
-
-```javascript
-TodoList.fetch();
-```
-
-### sync()
-
-In a collection with the `firebase` property defined, calling `sync()` will set the contents of the
-local collection to the specified Firebase location.
-
-```javascript
-TodoList.sync();
-```
-
-### save()
-
-In a model with the `firebase` property defined, calling `save()` will set the contents of the
-model to the specified Firebase location.
-
-```javascript
-MyTodo.save();
-```
-
-### destroy()
-
-In a model with the `firebase` property defined, calling `destroy()` will remove the contents at
-the specified Firebase location.
-
-```javascript
-MyTodo.destroy();
-```
 
 ## Backbone.Firebase.Collection
 
