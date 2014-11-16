@@ -4,6 +4,22 @@ describe('Backbone.Firebase', function() {
     return expect(Backbone.Firebase).to.be.ok;
   });
 
+  describe('#_checkId', function() {
+    it('should add an id to a new model', function() {
+
+      var mockSnap = new MockSnap({
+        name: '1',
+        val: {}
+      });
+
+      var model = Backbone.Firebase._checkId(mockSnap);
+
+      expect(model.id).to.be.ok;
+      model.id.should.equal(mockSnap.name());
+
+    });
+  });
+
   describe('#_readOnce', function() {
 
     var ref;

@@ -116,7 +116,7 @@ describe('Backbone.Firebase.Model', function() {
 
       // create a mock snap that removes the 'lastName' property
       var mockSnap = new MockSnap({
-        name: 1,
+        name: '1',
         val: {
           firstName: 'David'
         }

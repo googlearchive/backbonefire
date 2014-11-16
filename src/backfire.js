@@ -102,6 +102,35 @@
     }
   };
 
+  // if the model does not have an id check to make
+  // sure it's an object and assign the id to the
+  // name of the snapshot
+  Backbone.Firebase._checkId = function(snap) {
+    var model = snap.val();
+
+    // if the model is a primitive throw an error
+    if (Backbone.Firebase._isPrimitive(model)) {
+      Backbone.Firebase._throwError('InvalidIdException: Models must have an Id. Note: You may ' +
+      'be trying to sync a primitive value (int, string, bool).');
+    }
+
+    // if the model is null set it to an empty object and assign its id
+    // this way listeners can still be attached to populate the object in the future
+    if(model === null) {
+      model = {};
+    }
+
+    // set the id to the snapshot's key
+    model.id = snap.name();
+
+    return model;
+  };
+
+  Backbone.Firebase._isPrimitive = function(model) {
+    // is the model not an object and not null (basically, is it a primitive?)
+    return !_.isObject(model) && model !== null;
+  };
+
   // Model responsible for autoSynced objects
   // This model is never directly used. The Backbone.Firebase.Model will
   // inherit from this if it is an autoSynced model
@@ -112,6 +141,7 @@
 
       // apply remote changes locally
       this.firebase.on('value', function(snap) {
+
         this._setLocal(snap);
         this.trigger('sync', this, null, null);
       }, this);
@@ -130,8 +160,12 @@
       fetch: function() {
         console.warn('Save called on a Firebase model with autoSync enabled, ignoring.');
       },
-      sync: function() {
-        console.warn('Sync called on a Fireabse model with autoSync enabled, ignoring.');
+      sync: function(method, model, options) {
+        if(method === 'delete') {
+          Backbone.Firebase.sync(method, model, options);
+        } else {
+          console.warn('Sync called on a Fireabse model with autoSync enabled, ignoring.');
+        }
       }
     };
 
@@ -171,12 +205,12 @@
       Backbone.Model.apply(this, arguments);
       var defaults = _.result(this, 'defaults');
 
+      this.backboneDestroy = this.destroy;
+
       // Apply defaults only after first sync.
       this.once('sync', function() {
         this.set(_.defaults(this.toJSON(), defaults));
       });
-
-
 
       this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
@@ -204,12 +238,6 @@
 
     },
 
-    destroy: function(options) {
-      options = _.extend({}, options);
-      Backbone.Firebase._setWithCheck(this.firebase, null, options);
-      this.trigger('destroy', this, null, options);
-    },
-
     // siliently set the id of the model to the snapshot name
     _setId: function(snap) {
       // if the item new set the name to the id
@@ -227,8 +255,7 @@
     // Unset attributes that have been deleted from the server
     // by comparing the keys that have been removed.
     _unsetAttributes: function(snap) {
-      // TODO: Tell if the object has been destroyed
-      var newModel = snap.val();
+      var newModel = Backbone.Firebase._checkId(snap);
 
       if (typeof newModel === 'object' && newModel !== null) {
         var diff = _.difference(_.keys(this.attributes), _.keys(newModel));
@@ -459,7 +486,7 @@
       },
 
       _childAdded: function(snap) {
-        var model = this._checkId(snap);
+        var model = Backbone.Firebase._checkId(snap);
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
@@ -470,20 +497,6 @@
         this.get(model.id)._remoteAttributes = model;
       },
 
-      // if the model does not have an id check to make
-      // sure it's an object and assign the id to the
-      // name of the snapshot
-      _checkId: function(snap) {
-        var model = snap.val();
-        if (!model.id) {
-          if (!_.isObject(model)) {
-            Backbone.Firebase._throwError('InvalidIdException: Models must have an Id. Note: You may be trying to sync a primitive value (int, string, bool).');
-          }
-          model.id = snap.name();
-        }
-        return model;
-      },
-
       _childMoved: function(snap) {
         // TODO: Investigate: can this occur without the ID changing?
         this._log("_childMoved called with " + snap.val());
@@ -492,7 +505,7 @@
       // when a model has changed remotely find differences between the
       // local and remote data and apply them to the local model
       _childChanged: function(snap) {
-        var model = this._checkId(snap);
+        var model = Backbone.Firebase._checkId(snap);
 
         var item = _.find(this.models, function(child) {
           return child.id == model.id;
@@ -522,7 +535,7 @@
       // remove an item from the collection when removed remotely
       // provides the ability to remove siliently
       _childRemoved: function(snap) {
-        var model = this._checkId(snap);
+        var model = Backbone.Firebase._checkId(snap);
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
