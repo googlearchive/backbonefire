@@ -1,0 +1,15 @@
+{
+  "name": "backbone-fire-todo",
+  "version": "0.0.0",
+  "description": "Todo example using Backbone Fire.",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Backbone",
+    "Firebase"
+  ],
+  "author": "",
+  "license": "MIT"
+}

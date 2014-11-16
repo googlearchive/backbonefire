@@ -90,12 +90,12 @@ describe('Backbone.Firebase.Collection', function() {
     it('should should set deleted values to null', function() {
 
       var remoteAttributes = {
-        id: 1,
+        id: '1',
         name: 'David'
       };
 
       var localAttributes = {
-        id: 1
+        id: '1'
       };
 
       var updatedAttributes = collection._compareAttributes(remoteAttributes, localAttributes);
@@ -107,12 +107,12 @@ describe('Backbone.Firebase.Collection', function() {
     it('should return updated attributes', function() {
 
       var remoteAttributes = {
-        id: 1,
+        id: '1',
         name: 'Kato'
       };
 
       var localAttributes = {
-        id: 1,
+        id: '1',
         name: 'David',
         age: 26
       };
@@ -267,7 +267,7 @@ describe('Backbone.Firebase.Collection', function() {
     it('should add an id to a new model', function() {
 
       var mockSnap = new MockSnap({
-        name: 1,
+        name: '1',
         val: {}
       });
 
@@ -348,7 +348,7 @@ describe('Backbone.Firebase.Collection', function() {
       it('shoud call _log', function() {
         sinon.spy(collection, '_log');
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
             name: 'David'
           }
@@ -471,7 +471,7 @@ describe('Backbone.Firebase.Collection', function() {
 
         collection.models = [
           new Backbone.Model({
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           })
@@ -482,7 +482,7 @@ describe('Backbone.Firebase.Collection', function() {
       it('should unset local property from remote deletion', function() {
 
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
             name: 'David'
             // age has been removed
@@ -500,7 +500,7 @@ describe('Backbone.Firebase.Collection', function() {
       it('should update local model from remote update', function () {
 
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
             name: 'David',
             age: 26,
@@ -521,9 +521,9 @@ describe('Backbone.Firebase.Collection', function() {
         sinon.spy(collection, '_childAdded');
 
         var mockSnap = new MockSnap({
-          name: 4,
+          name: '4',
           val: {
-            id: 4,
+            id: '4',
             name: 'Cash',
             age: 2
           }
@@ -549,7 +549,7 @@ describe('Backbone.Firebase.Collection', function() {
 
         collection.models = [
           new Backbone.Model({
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           })
@@ -561,9 +561,9 @@ describe('Backbone.Firebase.Collection', function() {
         sinon.spy(Backbone.Collection.prototype, 'remove');
 
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           }
@@ -580,9 +580,9 @@ describe('Backbone.Firebase.Collection', function() {
         sinon.spy(Backbone.Collection.prototype, 'remove');
 
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           }
@@ -610,7 +610,7 @@ describe('Backbone.Firebase.Collection', function() {
 
         collection.models = [
           new Backbone.Model({
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           })
@@ -622,9 +622,9 @@ describe('Backbone.Firebase.Collection', function() {
         sinon.spy(Backbone.Collection.prototype, 'add');
 
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           }
@@ -640,9 +640,9 @@ describe('Backbone.Firebase.Collection', function() {
       it('should call Backbone.Collection.add silently', function() {
         sinon.spy(Backbone.Collection.prototype, 'add');
         var mockSnap = new MockSnap({
-          name: 1,
+          name: '1',
           val: {
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           }
@@ -671,7 +671,7 @@ describe('Backbone.Firebase.Collection', function() {
 
         collection.models = [
           new Backbone.Model({
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           })
@@ -733,7 +733,7 @@ describe('Backbone.Firebase.Collection', function() {
 
         collection.models = [
           new Backbone.Model({
-            id: 1,
+            id: '1',
             name: 'David',
             age: 26
           })
@@ -806,6 +806,20 @@ describe('Backbone.Firebase.Collection', function() {
 
         Backbone.Collection.prototype.add.restore();
       });
+    });
+
+    describe('#fetch', function() {
+
+      it('should call Backbone.Firebase.sync', function() {
+        sinon.spy(Backbone.Firebase, 'sync');
+
+        collection.fetch();
+
+        expect(Backbone.Firebase.sync.calledOnce).to.be.ok;
+
+        Backbone.Firebase.sync.restore();
+      });
+
     });
 
   });
