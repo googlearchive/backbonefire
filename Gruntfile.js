@@ -75,24 +75,7 @@ module.exports = function(grunt) {
         autowatch: false,
         singleRun: true
       }
-    },
-
-    copy: {
-      main: {
-        src: 'src/backfire.js',
-        dest: 'examples/todos/js/backfire.js',
-      },
-    },
-
-    serve: {
-      options: {
-        port: 9000,
-          'serve': {
-            'path': 'examples/todos'
-        }
-      }
     }
-
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');
@@ -101,13 +84,10 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-copy');
-  grunt.loadNpmTasks('grunt-serve');
 
   // Unit tests
   grunt.registerTask('test', ['karma:unit']);
 
   grunt.registerTask('build', ['jshint', 'concat', 'uglify']);
   grunt.registerTask('default', ['build', 'test']);
-  grunt.registerTask('todo', ['build', 'serve']);
 };

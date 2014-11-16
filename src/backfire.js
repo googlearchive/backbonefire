@@ -3,7 +3,7 @@
  * bindings let you use special model and collection types that allow for
  * synchronizing data with Firebase.
  *
- * BackFire 0.0.0
+ * BackFire 0.4.0
  * https://github.com/firebase/backfire/
  * License: MIT
  */
@@ -42,10 +42,6 @@
     } else if (method === 'update') {
 
       Backbone.Firebase._updateWithCheck(model.firebase, modelJSON, options);
-
-    } else if(method === 'delete') {
-
-      Backbone.Firebase._setWithCheck(model.firebase, null, options);
 
     }
 
@@ -168,7 +164,6 @@
 
     // Determine whether the realtime or once methods apply
     constructor: function(model, options) {
-      Backbone.Model.apply(this, arguments);
       var defaults = _.result(this, 'defaults');
 
       // Apply defaults only after first sync.
@@ -176,7 +171,7 @@
         this.set(_.defaults(this.toJSON(), defaults));
       });
 
-
+      Backbone.Model.apply(this, arguments);
 
       this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
@@ -278,49 +273,15 @@
 
     }
     OnceCollection.protoype = {
-      // Create an id from a Firebase push-id and call Backbone.create, which
-      // will do prepare the models and trigger the proper events and then call
-      // Backbone.Firebase.sync with the correct method.
       create: function(model, options) {
         model.id = this.firebase.push().name();
         options = _.extend({ autoSync: false }, options);
         return Backbone.Collection.prototype.create.apply(this, [model, options]);
       },
-      // Create an id from a Firebase push-id and call Backbone.add, which
-      // will do prepare the models and trigger the proper events and then call
-      // Backbone.Firebase.sync with the correct method.
       add: function(model, options) {
         model.id = this.firebase.push().name();
         options = _.extend({ autoSync: false }, options);
         return Backbone.Collection.prototype.add.apply(this, [model, options]);
-      },
-      // Proxy to Backbone.Firebase.sync
-      sync: function(method, model, options) {
-        Backbone.Firebase.sync(method, model, options);
-      },
-      // Firebase returns lists as an object with keys, where Backbone
-      // collections require an array. This function modifies the existing
-      // Backbone.Collection.fetch method by mapping the returned object from
-      // Firebase to an array that Backbone can use.
-      fetch: function(options) {
-        options = options ? _.clone(options) : {};
-        if (options.parse === void 0) { options.parse = true; }
-        var success = options.success;
-        var collection = this;
-        options.success = function(resp) {
-          var arr = [];
-          var keys = _.keys(resp);
-          _.each(keys, function(key) {
-            arr.push(resp[key]);
-          });
-          var method = options.reset ? 'reset' : 'set';
-          collection[method](arr, options);
-          if (success) { success(collection, arr, options); }
-          options.autoSync = false;
-          options.url = this.url;
-          collection.trigger('sync', collection, arr, options);
-        };
-        return this.sync('read', this, options);
       }
     };
 
@@ -405,6 +366,7 @@
             this._suppressEvent = true;
           }
           Backbone.Firebase._setWithCheck(childRef, null, options);
+          //childRef.set(null, _.bind(options.success, model));
         }
 
         return parsed;
@@ -437,19 +399,18 @@
         models = singular ? (models ? [models] : []) : models.slice();
 
         for (var i = 0; i < models.length; i++) {
-          var model = models[i];
-
-          if (!model.id) {
-            model.id = this.firebase.push().name();
-          }
 
           // call Backbone's prepareModel to apply options
-          model = Backbone.Collection.prototype._prepareModel.apply(
-            this, [model, options || {}]
+          var model = Backbone.Collection.prototype._prepareModel.apply(
+            this, [models[i], options || {}]
           );
 
           if (model.toJSON && typeof model.toJSON == "function") {
             model = model.toJSON();
+          }
+
+          if (!model.id) {
+            model.id = this.firebase.push().name();
           }
 
           pushArray.push(model);
@@ -618,8 +579,7 @@
 
     constructor: function (model, options) {
       Backbone.Collection.apply(this, arguments);
-      var self = this;
-      var BaseModel = self.model;
+
       this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
       switch (typeof this.url) {
@@ -639,6 +599,8 @@
       // if we are not autoSyncing, the model needs
       // to be a non-autoSynced model
       if(!this.autoSync) {
+        this.model = Backbone.Firebase.Model;
+
         _.extend(this, OnceCollection.protoype);
         OnceCollection.apply(this, arguments);
       } else {
@@ -646,23 +608,6 @@
         SyncCollection.apply(this, arguments);
       }
 
-      // intercept the users model and give it a firebase ref
-      // and have it listen to local changes silently to set
-      // unsetted attributes to null to be deleted on the server
-      this.model = function(attrs, opts) {
-
-        var newItem = new BaseModel(attrs, opts);
-        newItem.autoSync = false;
-        newItem.firebase = self.firebase.child(newItem.id);
-        newItem.sync = Backbone.Firebase.sync;
-        newItem.on('change', function(model) {
-          var updated = Backbone.Firebase.Model.prototype._updateModel(model);
-          model.set(updated, { silent: true });
-        });
-
-        return newItem;
-
-      };
 
     }
 
