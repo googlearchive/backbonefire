@@ -37,6 +37,6 @@
     "underscore": "~1.5.2"
   },
   "devDependencies": {
-    "jasmine": "~2.0.0"
+    "mockfirebase": "~0.3.0"
   }
 }
