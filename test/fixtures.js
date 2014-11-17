@@ -3,8 +3,8 @@ MockFirebase.override();
 function MockSnap(params) {
   params = params || {};
 
-  this._name = params.name || '';
-  this._val = params.val || '';
+  this._name = params.name;
+  this._val = params.val;
 
   this.name = function() {
     return this._name;

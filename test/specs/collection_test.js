@@ -139,6 +139,7 @@ describe('Backbone.Firebase.Collection', function() {
 
       collection = new Collection();
       item = {
+        id: '1',
         '.priority': 1,
         name: 'David'
       }
@@ -146,13 +147,12 @@ describe('Backbone.Firebase.Collection', function() {
 
     it('should call setWithPriority on a Firebase reference', function() {
       collection._setWithPriority(collection.firebase, item);
-      collection.firebase.flush();
+      //collection.firebase.flush();
       expect(collection.firebase.setWithPriority.calledOnce).to.be.ok;
     });
 
     it('should delete local priority', function() {
       var setItem = collection._setWithPriority(collection.firebase, item);
-      collection.firebase.flush();
       expect(setItem['.priority']).to.be.undefined;
     });
 
@@ -162,12 +162,10 @@ describe('Backbone.Firebase.Collection', function() {
 
     it('should call update on a Firebase reference', function() {
       var Collection = Backbone.Firebase.Collection.extend({
-        url: 'Mock://',
-        autoSync: true
+        url: 'Mock://'
       });
       collection = new Collection();
       collection._updateToFirebase(collection.firebase, { id: '1' });
-      collection.firebase.flush();
       expect(collection.firebase.update.calledOnce).to.be.ok;
     });
 
@@ -262,27 +260,6 @@ describe('Backbone.Firebase.Collection', function() {
       models.add({ title: 'blah' });
       models.firebase.flush();
       return expect(spy.called).to.be.ok;
-    });
-
-    it('should add an id to a new model', function() {
-
-      var mockSnap = new MockSnap({
-        name: '1',
-        val: {}
-      });
-
-      var Collection = Backbone.Firebase.Collection.extend({
-        url: 'Mock://',
-        autoSync: true
-      });
-
-      var collection = new Collection();
-
-      var model = collection._checkId(mockSnap);
-
-      expect(model.id).to.be.ok;
-      model.id.should.equal(mockSnap.name());
-
     });
 
     describe('#create', function() {
@@ -484,6 +461,7 @@ describe('Backbone.Firebase.Collection', function() {
         var mockSnap = new MockSnap({
           name: '1',
           val: {
+            id: '1',
             name: 'David'
             // age has been removed
           }
@@ -502,6 +480,7 @@ describe('Backbone.Firebase.Collection', function() {
         var mockSnap = new MockSnap({
           name: '1',
           val: {
+            id: '1',
             name: 'David',
             age: 26,
             favDino: 'trex'
@@ -662,9 +641,9 @@ describe('Backbone.Firebase.Collection', function() {
       var collection;
       var model;
       beforeEach(function() {
+
         var Collection = Backbone.Firebase.Collection.extend({
-          url: 'Mock://',
-          autoSync: true
+          url: 'Mock://'
         });
 
         collection = new Collection();

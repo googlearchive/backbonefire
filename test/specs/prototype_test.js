@@ -4,6 +4,77 @@ describe('Backbone.Firebase', function() {
     return expect(Backbone.Firebase).to.be.ok;
   });
 
+  describe("#_isPrimitive", function() {
+
+    it('should return false for null', function() {
+      var value = Backbone.Firebase._isPrimitive(null);
+      expect(value).to.be.false;
+    });
+
+    it('should return false for object', function() {
+      var value = Backbone.Firebase._isPrimitive({});
+      expect(value).to.be.false;
+    });
+
+    it('should return true for string', function() {
+      var value = Backbone.Firebase._isPrimitive('hello');
+      expect(value).to.be.true;
+    });
+
+    it('should return true for int', function() {
+      var value = Backbone.Firebase._isPrimitive(1);
+      expect(value).to.be.true;
+    });
+
+    it('should return true for bool', function() {
+      var value = Backbone.Firebase._isPrimitive(true);
+      expect(value).to.be.true;
+    });
+
+  });
+
+  describe('#_checkId', function() {
+
+    it('should add an id to a new model', function() {
+
+      var mockSnap = new MockSnap({
+        name: '1',
+        val: {
+          firstname: 'David'
+        }
+      });
+
+      var model = Backbone.Firebase._checkId(mockSnap);
+
+      expect(model.id).to.be.ok;
+      model.id.should.equal(mockSnap.name());
+
+    });
+
+    it('should throw an error if the model is not an object', function() {
+      var mockSnap = new MockSnap({
+        name: '1',
+        val: 'hello'
+      });
+      try {
+        var model = Backbone.Firebase._checkId(1);
+      } catch (err) {
+        expect(err).to.be.ok
+      }
+
+    });
+
+    it('should create an object with an id for null values', function() {
+      var mockSnap = new MockSnap({
+        name: '1',
+        val: null
+      });
+      var model = Backbone.Firebase._checkId(mockSnap);
+      expect(model.id).to.be.ok;
+    });
+
+  });
+
   describe('#_readOnce', function() {
 
     var ref;
