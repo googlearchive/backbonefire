@@ -42,7 +42,13 @@
 
       Backbone.Firebase._readOnce(model.firebase, function onComplete(snap) {
         var resp = snap.val();
-        options.success(resp);
+        if(options.success) {
+          options.success(resp);
+        }
+      }, function _readOnceError(err) {
+        if(options.error) {
+          options.error(err);
+        }
       });
 
     } else if (method === 'create') {
@@ -64,8 +70,8 @@
   /**
    * A utility for a one-time read from Firebase.
    */
-  Backbone.Firebase._readOnce = function(ref, cb) {
-    ref.once('value', cb);
+  Backbone.Firebase._readOnce = function(ref, onComplete) {
+    ref.once('value', onComplete);
   };
 
   /**
@@ -177,6 +183,16 @@
     return !_.isObject(value) && value !== null;
   };
 
+  Backbone.Firebase._setUpForSuccess = function(model, options) {
+    var success = options.success;
+    options.success = _.bind(function(model, resp) {
+      if (success) {
+        success(model, resp, options);
+      }
+      this.trigger('sync', this, null, null);
+    }, model);
+  };
+
   /**
    * Model responsible for autoSynced objects
    * This model is never directly used. The Backbone.Firebase.Model will
@@ -189,7 +205,6 @@
 
       // apply remote changes locally
       this.firebase.on('value', function(snap) {
-
         this._setLocal(snap);
         this.trigger('sync', this, null, null);
       }, this);
@@ -254,8 +269,6 @@
     constructor: function(model, options) {
       Backbone.Model.apply(this, arguments);
       var defaults = _.result(this, 'defaults');
-
-      this.backboneDestroy = this.destroy;
 
       // Apply defaults only after first sync.
       this.once('sync', function() {
@@ -429,20 +442,20 @@
 
     function SyncCollection() {
       // Add handlers for remote events
-      this.firebase.on("child_added", _.bind(this._childAdded, this));
-      this.firebase.on("child_moved", _.bind(this._childMoved, this));
-      this.firebase.on("child_changed", _.bind(this._childChanged, this));
-      this.firebase.on("child_removed", _.bind(this._childRemoved, this));
+      this.firebase.on('child_added', _.bind(this._childAdded, this));
+      this.firebase.on('child_moved', _.bind(this._childMoved, this));
+      this.firebase.on('child_changed', _.bind(this._childChanged, this));
+      this.firebase.on('child_removed', _.bind(this._childRemoved, this));
 
-      // Once handler to emit "sync" event.
-      this.firebase.once("value", _.bind(function() {
-        this.trigger("sync", this, null, null);
+      // Once handler to emit 'sync' event.
+      this.firebase.once('value', _.bind(function() {
+        this.trigger('sync', this, null, null);
       }, this));
 
       // Handle changes in any local models.
-      this.listenTo(this, "change", this._updateModel, this);
+      this.listenTo(this, 'change', this._updateModel, this);
       // Listen for destroy event to remove models.
-      this.listenTo(this, "destroy", this._removeModel, this);
+      this.listenTo(this, 'destroy', this._removeModel, this);
     }
 
     SyncCollection.protoype = {
@@ -456,13 +469,7 @@
         options.success =
           _.isFunction(options.success) ? options.success : function() {};
 
-        var success = options.success;
-        options.success = _.bind(function(model, resp) {
-          if (success) {
-            success(model, resp, options);
-          }
-          this.trigger('sync', this, null, null);
-        }, this);
+        Backbone.Firebase._setUpForSuccess(this, options);
 
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
@@ -495,6 +502,8 @@
         options = options ? _.clone(options) : {};
         options.success =
           _.isFunction(options.success) ? options.success : function() {};
+
+        Backbone.Firebase._setUpForSuccess(this, options);
 
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
@@ -600,6 +609,7 @@
         });
 
         item.set(model);
+        this.trigger('sync', this);
         this._preventSync(item, false);
       },
 
