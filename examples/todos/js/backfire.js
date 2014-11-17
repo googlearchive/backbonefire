@@ -8,7 +8,10 @@
  * License: MIT
  */
 
-(function(_, Backbone) {
+define([
+  'underscore',
+  'backbone',
+], function (_, Backbone) {
   "use strict";
 
   Backbone.Firebase = {};
@@ -765,4 +768,4 @@
 
   });
 
-})(window._, window.Backbone);
+});
