@@ -22,7 +22,7 @@ require.config({
 		underscore: '../bower_components/underscore/underscore',
 		backbone: '../bower_components/backbone/backbone',
 		text: '../bower_components/requirejs-text/text',
-		firebase: 'firebase',
+		firebase: '../bower_components/firebase/firebase',
 		backfire: 'backfire'
 	}
 });
