@@ -67,28 +67,6 @@ describe('Backbone.Firebase.Model', function() {
 
     });
 
-    it('should call _setToFirebase', function() {
-      sinon.spy(Backbone.Firebase, '_setToFirebase');
-
-      model.destroy();
-      model.firebase.flush();
-
-      expect(Backbone.Firebase._setToFirebase.calledOnce).to.be.ok;
-
-      Backbone.Firebase._setToFirebase.restore();
-    });
-
-    it('should call _onCompleteCheck', function() {
-      sinon.spy(Backbone.Firebase, '_onCompleteCheck');
-
-      model.destroy();
-      model.firebase.flush();
-
-      expect(Backbone.Firebase._onCompleteCheck.calledOnce).to.be.ok;
-
-      Backbone.Firebase._onCompleteCheck.restore();
-    });
-
   });
 
   it('should update model', function() {
@@ -129,12 +107,20 @@ describe('Backbone.Firebase.Model', function() {
 
     });
 
-    it('should set local', function() {
+    it('should call _unsetAttributes', function() {
       var Model = Backbone.Firebase.Model.extend({
         url: 'Mock://'
       });
+
       var model = new Model();
-      var mockSnap = new MockSnap();
+
+      var mockSnap = new MockSnap({
+        name: '1',
+        val: {
+          firstname: 'David'
+        }
+      });
+
       sinon.spy(model, '_unsetAttributes');
 
       model._setLocal(mockSnap);
@@ -148,7 +134,6 @@ describe('Backbone.Firebase.Model', function() {
 
   describe('#_setId', function() {
     it('should set id', function() {
-      // TODO: Test _setId
       var Model = Backbone.Firebase.Model.extend({
         url: 'Mock://'
       });
@@ -168,7 +153,7 @@ describe('Backbone.Firebase.Model', function() {
       });
       var model = new Model();
       var mockSnap = new MockSnap({
-        name: 1
+        name: '1'
       });
       model._setId(mockSnap);
 

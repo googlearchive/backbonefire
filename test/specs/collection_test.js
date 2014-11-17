@@ -147,13 +147,12 @@ describe('Backbone.Firebase.Collection', function() {
 
     it('should call setWithPriority on a Firebase reference', function() {
       collection._setWithPriority(collection.firebase, item);
-      collection.firebase.flush();
+      //collection.firebase.flush();
       expect(collection.firebase.setWithPriority.calledOnce).to.be.ok;
     });
 
     it('should delete local priority', function() {
       var setItem = collection._setWithPriority(collection.firebase, item);
-      collection.firebase.flush();
       expect(setItem['.priority']).to.be.undefined;
     });
 
@@ -167,7 +166,6 @@ describe('Backbone.Firebase.Collection', function() {
       });
       collection = new Collection();
       collection._updateToFirebase(collection.firebase, { id: '1' });
-      collection.firebase.flush();
       expect(collection.firebase.update.calledOnce).to.be.ok;
     });
 
@@ -263,27 +261,6 @@ describe('Backbone.Firebase.Collection', function() {
       models.firebase.flush();
       return expect(spy.called).to.be.ok;
     });
-
-    // it('should add an id to a new model', function() {
-    //
-    //   var mockSnap = new MockSnap({
-    //     name: '1',
-    //     val: {}
-    //   });
-    //
-    //   var Collection = Backbone.Firebase.Collection.extend({
-    //     url: 'Mock://',
-    //     autoSync: true
-    //   });
-    //
-    //   var collection = new Collection();
-    //
-    //   var model = collection._checkId(mockSnap);
-    //
-    //   expect(model.id).to.be.ok;
-    //   model.id.should.equal(mockSnap.name());
-    //
-    // });
 
     describe('#create', function() {
 
@@ -664,9 +641,9 @@ describe('Backbone.Firebase.Collection', function() {
       var collection;
       var model;
       beforeEach(function() {
+
         var Collection = Backbone.Firebase.Collection.extend({
-          url: 'Mock://',
-          autoSync: true
+          url: 'Mock://'
         });
 
         collection = new Collection();
