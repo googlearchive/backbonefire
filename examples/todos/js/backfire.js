@@ -166,8 +166,6 @@ define([
         this.set(_.defaults(this.toJSON(), defaults));
       });
 
-
-
       this.autoSync = Backbone.Firebase._determineAutoSync(this, options);
 
       switch (typeof this.url) {
