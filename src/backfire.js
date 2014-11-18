@@ -184,6 +184,7 @@
   };
 
   Backbone.Firebase._setUpForSuccess = function(model, options) {
+    options = _.extend({}, options);
     var success = options.success;
     options.success = _.bind(function(model, resp) {
       if (success) {
@@ -191,6 +192,7 @@
       }
       this.trigger('sync', this, null, null);
     }, model);
+    return options;
   };
 
   /**
@@ -441,11 +443,12 @@
   var SyncCollection = (function() {
 
     function SyncCollection() {
+
       // Add handlers for remote events
-      this.firebase.on('child_added', _.bind(this._childAdded, this));
-      this.firebase.on('child_moved', _.bind(this._childMoved, this));
-      this.firebase.on('child_changed', _.bind(this._childChanged, this));
-      this.firebase.on('child_removed', _.bind(this._childRemoved, this));
+      this._syncEvent('child_added', '_childAdded');
+      this._syncEvent('child_moved', '_childMoved');
+      this._syncEvent('child_changed', '_childChanged');
+      this._syncEvent('child_removed', '_childRemoved');
 
       // Once handler to emit 'sync' event.
       this.firebase.once('value', _.bind(function() {
@@ -461,6 +464,20 @@
     SyncCollection.protoype = {
       comparator: function(model) {
         return model.id;
+      },
+
+      // listen for events and apply the arguments to the _childSync function
+      _syncEvent: function(firebaseEvent, functionName) {
+        this.firebase.on(
+          firebaseEvent,
+          _.partial( _.bind(this._childSync, this), functionName )
+        );
+      },
+
+      // triger sync and route to the appropiate function
+      _childSync: function(event, snap) {
+        this.trigger('sync', this);
+        this[event](snap);
       },
 
       add: function(models, options) {
@@ -579,7 +596,7 @@
 
       _childMoved: function(snap) {
         // TODO: Investigate: can this occur without the ID changing?
-        this._log("_childMoved called with " + snap.val());
+        this._log('_childMoved called with ' + snap.val());
       },
 
       // when a model has changed remotely find differences between the
@@ -609,6 +626,7 @@
         });
 
         item.set(model);
+        // fire sync since this is a response from the server
         this.trigger('sync', this);
         this._preventSync(item, false);
       },
@@ -624,6 +642,8 @@
             this, [model], {silent: true}
           );
         } else {
+          // trigger sync because data has been received from the server
+          this.trigger('sync', this);
           Backbone.Collection.prototype.remove.apply(this, [model]);
         }
       },
@@ -647,11 +667,11 @@
         // consolidate the updates to Firebase
         updateAttributes = this._compareAttributes(remoteAttributes, localAttributes);
 
-        ref = this.firebase.child(model.id);
+        ref = this.firebase.ref().child(model.id);
 
         // if ".priority" is present setWithPriority
         // else do a regular update
-        if (_.has(updateAttributes, ".priority")) {
+        if (_.has(updateAttributes, '.priority')) {
           this._setWithPriority(ref, localAttributes);
         } else {
           this._updateToFirebase(ref, localAttributes);

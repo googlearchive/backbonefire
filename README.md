@@ -10,24 +10,27 @@ BackFire is the officially supported [Backbone](http://backbonejs.org) binding f
 Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.com/). This Todo App is a simple port of the TodoMVC app using Backfire.
 
 ## Basic Usage
+Using BackFire collections and models is very similar to the regular ones in Backbone. To setup with Backfire use `Backbone.Firebase` rather than just `Backbone`.
 
 ```javascript
+// This is a plain old Backbone Model
 var Todo = Backbone.Model.extend({
   defaults: {
     completed: false,
     title: 'New todo'
   }
 });
+
+// This is a Firebase Collection that syncs data from this url
 var Todos = Backbone.Firebase.Collection.extend({
   url: 'https://<your-firebase>.firebaseio.com/todos',
   model: Todo
 });
 ```
 
-
 ## Downloading BackFire
 
-To get started include Firebase and Backfire after the usual Backbone dependencies (jQuery, Underscore, and Backbone).
+To get started include Firebase and BackFire after the usual Backbone dependencies (jQuery, Underscore, and Backbone).
 
 ```html
 <!-- jQuery -->
@@ -67,44 +70,75 @@ BackFire requires Firebase in order to sync data. You can
 [sign up here](https://www.firebase.com/signup/?utm_medium=web&utm_source=backfire) for a free
 account.
 
+## autoSync
+
+As of the 0.5 release there are two ways to sync `Models` and `Collections`. By specifying the property `autoSync` to either true of false, you can control whether the component is synced in realtime. The `autoSync` property is true by default.
+
+#### autoSync: true
+
+```javascript
+var RealtimeList = Backbone.Firebase.Collection.extend({
+  url: 'https://<your-firebase>.firebaseio.com/todos',
+  autoSync: true // this is true by default
+})
+// this collection will immediately begin syncing data
+// no call to fetch is required, and any calls to fetch will be ignored
+var realtimeList = new RealtimeList();
+
+realtimeList.on('sync', function(collection) {
+  console.log('collection is loaded', collection);
+});
+```
+
+#### autoSync: false
+
+```javascript
+// This collection will remain empty until fetch is called
+var OnetimeList = Backbone.Firebase.Collection.extend({
+  url: 'https://<your-firebase>.firebaseio.com/todos',
+  autoSync: false
+})
+var onetimeList = new OnetimeList();
+
+onetimeList.on('sync', function(collection) {
+  console.log('collection is loaded', collection);
+});
+
+onetimeList.fetch();
+```
+
 ## Backbone.Firebase.Collection
 
 This is a special collection object that will automatically synchronize its contents with Firebase.
 You may extend this object, and must provide a Firebase URL or a Firebase reference as the
-`firebase` property.
+`url` property.
 
-Each model in the collection will be treated as a `Backbone.Firebase.Model` (see below).
+Each model in the collection will have its own `firebase` property that is its reference in Firebase.
 
-Please see [todos.js](https://github.com/firebase/backfire/blob/gh-pages/examples/todos/todos.js)
-for an example of how to use this special collection object.
+For a simple example of using `Backbone.Firebase.Collection` see [todos.js]().
 
 ```javascript
 var TodoList = Backbone.Firebase.Collection.extend({
   model: Todo,
-  firebase: "https://<your-firebase>.firebaseio.com"
+  url: 'https://<your-firebase>.firebaseio.com/todos'
 });
 ```
 
-You may also apply a `limit` or some other
+You may also apply an `orderByChild` or some other
 [query](https://www.firebase.com/docs/web/guide/retrieving-data.html#section-queries) on a
 reference and pass it in:
 
 ```javascript
-var Messages = Backbone.Firebase.Collection.extend({
-  firebase: new Firebase("https://<your-firebase>.firebaseio.com").limit(10)
+var TodoList = Backbone.Firebase.Collection.extend({
+  url: new Firebase('https://<your-firebase>.firebaseio.com/todos').orderByChild('importance')
 });
 ```
 Any models added to the collection will be synchronized to the provided Firebase. Any other clients
 using the Backbone binding will also receive `add`, `remove` and `changed` events on the collection
 as appropriate.
 
-**BE AWARE!** You do not need to call any functions that will affect _remote_ data. If you call
-`fetch()` or `sync()` on the collection, **the library will ignore it silently**.
-
-```javascript
-Messages.fetch(); // DOES NOTHING
-Messages.sync();  // DOES NOTHING
-```
+**BE AWARE!** If autoSync is set to true, you do not need to call any functions that will affect _remote_ data. If you call
+`fetch()` on the collection, **the library will ignore it silently**. However, if autoSync is set to false, you can use `fetch()`. This is explained above in the autoSync section.
 
 You should add and remove your models to the collection as you normally would, (via `add()` and
 `remove()`) and _remote_ data will be instantly updated. Subsequently, the same events will fire on
@@ -112,13 +146,19 @@ all your other clients immediately.
 
 ### add(model)
 
-Adds a new model to the collection. This model will be synchronized to Firebase, triggering an
-`add` event both locally and on all other clients.
+Adds a new model to the collection. If autoSync set to true, the newly added model will be synchronized to Firebase, triggering an
+`add` and `sync` event both locally and on all other clients. If autoSync is set to false, the `add` event will only be raised locally.
 
 ```javascript
-Messages.add({
-  subject: "Hello",
-  time: new Date().getTime()
+todoList.on('all', function(event) {
+  // if autoSync is true this will log add and sync
+  // if autoSync is false this will only log add
+  console.log(event);
+});
+
+todoList.add({
+  subject: 'Make more coffee',
+  importance: 1
 });
 ```
 
@@ -128,7 +168,7 @@ Removes a model from the collection. This model will also be removed from Fireba
 `remove` event both locally and on all other clients.
 
 ```javascript
-Messages.remove(someModel);
+todoList.remove(someModel);
 ```
 
 ### create(value)
@@ -137,8 +177,8 @@ Creates and adds a new model to the collection. The newly created model is retur
 `id` property (uniquely generated by Firebase).
 
 ```javascript
-var model = Messages.create({bar: "foo"});
-Messages.get(model.id);
+var model = TodoList.create({bar: "foo"});
+TodoList.get(model.id);
 ```
 
 ## Backbone.Firebase.Model
