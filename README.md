@@ -7,10 +7,6 @@ BackFire is the officially supported [Backbone](http://backbonejs.org) binding f
 
 ## Live Demo
 
-<<<<<<< HEAD
-Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.com)
-which was created using BackFire.
-=======
 Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.com/). This Todo App is a simple port of the TodoMVC app using Backfire.
 
 ## Basic Usage
@@ -51,12 +47,8 @@ To get started include Firebase and BackFire after the usual Backbone dependenci
 <script src="https://cdn.firebase.com/js/client/2.0.3/firebase.js"></script>
 
 <!-- BackFire -->
-<<<<<<< HEAD
-<script src="https://cdn.firebase.com/libs/backfire/0.4.0/backfire.min.js"></script>
-=======
 <script src="https://cdn.firebase.com/libs/backfire/0.5.0/backfire.js"></script>
->>>>>>> 0.5-release
-```
+
 
 Use the URL above to download both the minified and non-minified versions of BackFire from the
 Firebase CDN. You can also download them from the
