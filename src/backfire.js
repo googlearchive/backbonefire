@@ -183,18 +183,6 @@
     return !_.isObject(value) && value !== null;
   };
 
-  Backbone.Firebase._setUpForSuccess = function(model, options) {
-    options = _.extend({}, options);
-    var success = options.success;
-    options.success = _.bind(function(model, resp) {
-      if (success) {
-        success(model, resp, options);
-      }
-      this.trigger('sync', this, null, null);
-    }, model);
-    return options;
-  };
-
   /**
    * Model responsible for autoSynced objects
    * This model is never directly used. The Backbone.Firebase.Model will
@@ -486,8 +474,6 @@
         options.success =
           _.isFunction(options.success) ? options.success : function() {};
 
-        Backbone.Firebase._setUpForSuccess(this, options);
-
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
 
@@ -519,8 +505,6 @@
         options = options ? _.clone(options) : {};
         options.success =
           _.isFunction(options.success) ? options.success : function() {};
-
-        Backbone.Firebase._setUpForSuccess(this, options);
 
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
