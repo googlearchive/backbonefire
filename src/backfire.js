@@ -9,7 +9,7 @@
  */
 
 (function(_, Backbone) {
-  "use strict";
+  'use strict';
 
   Backbone.Firebase = {};
 
@@ -53,7 +53,13 @@
 
       Backbone.Firebase._readOnce(model.firebase, function onComplete(snap) {
         var resp = snap.val();
-        options.success(resp);
+        if(options.success) {
+          options.success(resp);
+        }
+      }, function _readOnceError(err) {
+        if(options.error) {
+          options.error(err);
+        }
       });
 
     } else if (method === 'create') {
@@ -75,8 +81,8 @@
   /**
    * A utility for a one-time read from Firebase.
    */
-  Backbone.Firebase._readOnce = function(ref, cb) {
-    ref.once('value', cb);
+  Backbone.Firebase._readOnce = function(ref, onComplete) {
+    ref.once('value', onComplete);
   };
 
   /**
@@ -200,7 +206,6 @@
 
       // apply remote changes locally
       this.firebase.on('value', function(snap) {
-
         this._setLocal(snap);
         this.trigger('sync', this, null, null);
       }, this);
@@ -265,8 +270,6 @@
     constructor: function(model, options) {
       Backbone.Model.apply(this, arguments);
       var defaults = _.result(this, 'defaults');
-
-      this.backboneDestroy = this.destroy;
 
       // Apply defaults only after first sync.
       this.once('sync', function() {
@@ -345,8 +348,8 @@
     _updateModel: function(model) {
       var modelObj = model.changedAttributes();
       _.each(model.changed, function(value, key) {
-        if (typeof value === "undefined" || value === null) {
-          if (key == "id") {
+        if (typeof value === 'undefined' || value === null) {
+          if (key == 'id') {
             delete modelObj[key];
           } else {
             modelObj[key] = null;
@@ -439,21 +442,22 @@
   var SyncCollection = (function() {
 
     function SyncCollection() {
-      // Add handlers for remote events
-      this.firebase.on("child_added", _.bind(this._childAdded, this));
-      this.firebase.on("child_moved", _.bind(this._childMoved, this));
-      this.firebase.on("child_changed", _.bind(this._childChanged, this));
-      this.firebase.on("child_removed", _.bind(this._childRemoved, this));
 
-      // Once handler to emit "sync" event.
-      this.firebase.once("value", _.bind(function() {
-        this.trigger("sync", this, null, null);
+      // Add handlers for remote events
+      this._syncEvent('child_added', '_childAdded');
+      this._syncEvent('child_moved', '_childMoved');
+      this._syncEvent('child_changed', '_childChanged');
+      this._syncEvent('child_removed', '_childRemoved');
+
+      // Once handler to emit 'sync' event.
+      this.firebase.once('value', _.bind(function() {
+        this.trigger('sync', this, null, null);
       }, this));
 
       // Handle changes in any local models.
-      this.listenTo(this, "change", this._updateModel, this);
+      this.listenTo(this, 'change', this._updateModel, this);
       // Listen for destroy event to remove models.
-      this.listenTo(this, "destroy", this._removeModel, this);
+      this.listenTo(this, 'destroy', this._removeModel, this);
     }
 
     SyncCollection.protoype = {
@@ -461,19 +465,25 @@
         return model.id;
       },
 
+      // listen for events and apply the arguments to the _childSync function
+      _syncEvent: function(firebaseEvent, functionName) {
+        this.firebase.on(
+          firebaseEvent,
+          _.partial( _.bind(this._childSync, this), functionName )
+        );
+      },
+
+      // triger sync and route to the appropiate function
+      _childSync: function(event, snap) {
+        this.trigger('sync', this);
+        this[event](snap);
+      },
+
       add: function(models, options) {
         var parsed = this._parseModels(models);
         options = options ? _.clone(options) : {};
         options.success =
           _.isFunction(options.success) ? options.success : function() {};
-
-        var success = options.success;
-        options.success = _.bind(function(model, resp) {
-          if (success) {
-            success(model, resp, options);
-          }
-          this.trigger('sync', this, null, null);
-        }, this);
 
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
@@ -492,7 +502,7 @@
       create: function(model, options) {
         options = options ? _.clone(options) : {};
         if (options.wait) {
-          this._log("Wait option provided to create, ignoring.");
+          this._log('Wait option provided to create, ignoring.');
         }
         if (!model) {
           return false;
@@ -525,7 +535,7 @@
         this.remove(this.models, {silent: true});
         // Add new models.
         var ret = this.add(models, {silent: true});
-        // Trigger "reset" event.
+        // Trigger 'reset' event.
         if (!options.silent) {
           this.trigger('reset', this, options);
         }
@@ -557,7 +567,7 @@
             this, [model, options || {}]
           );
 
-          if (model.toJSON && typeof model.toJSON == "function") {
+          if (model.toJSON && typeof model.toJSON == 'function') {
             model = model.toJSON();
           }
 
@@ -582,7 +592,7 @@
 
       _childMoved: function(snap) {
         // TODO: Investigate: can this occur without the ID changing?
-        this._log("_childMoved called with " + snap.val());
+        this._log('_childMoved called with ' + snap.val());
       },
 
       // when a model has changed remotely find differences between the
@@ -596,7 +606,7 @@
 
         if (!item) {
           // TODO: Investigate: what is the right way to handle this case?
-          //throw new Error("Could not find model with ID " + model.id);
+          //throw new Error('Could not find model with ID ' + model.id);
           this._childAdded(snap);
           return;
         }
@@ -612,6 +622,8 @@
         });
 
         item.set(model);
+        // fire sync since this is a response from the server
+        this.trigger('sync', this);
         this._preventSync(item, false);
       },
 
@@ -626,6 +638,8 @@
             this, [model], {silent: true}
           );
         } else {
+          // trigger sync because data has been received from the server
+          this.trigger('sync', this);
           Backbone.Collection.prototype.remove.apply(this, [model]);
         }
       },
@@ -649,11 +663,11 @@
         // consolidate the updates to Firebase
         updateAttributes = this._compareAttributes(remoteAttributes, localAttributes);
 
-        ref = this.firebase.child(model.id);
+        ref = this.firebase.ref().child(model.id);
 
-        // if ".priority" is present setWithPriority
+        // if '.priority' is present setWithPriority
         // else do a regular update
-        if (_.has(updateAttributes, ".priority")) {
+        if (_.has(updateAttributes, '.priority')) {
           this._setWithPriority(ref, localAttributes);
         } else {
           this._updateToFirebase(ref, localAttributes);
@@ -679,11 +693,11 @@
         return updateAttributes;
       },
 
-      // Special case if ".priority" was updated - a merge is not
+      // Special case if '.priority' was updated - a merge is not
       // allowed so we'll have to do a full setWithPriority.
       _setWithPriority: function(ref, item) {
-        var priority = item[".priority"];
-        delete item[".priority"];
+        var priority = item['.priority'];
+        delete item['.priority'];
         ref.setWithPriority(item, priority);
         return item;
       },
