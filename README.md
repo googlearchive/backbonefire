@@ -194,27 +194,63 @@ todoList.on('all', function(event) {
 ## Backbone.Firebase.Model
 
 This is a special model object that will automatically synchronize its contents with Firebase. You
-may extend this object, and must provide a Firebase URL or a Firebase reference as the `firebase`
+may extend this object, and must provide a Firebase URL or a Firebase reference as the `url`
 property.
 
 ```javascript
 var MyTodo = Backbone.Firebase.Model.extend({
-  firebase: "https://<your-firebase>.firebaseio.com/mytodo"
+  url: "https://<your-firebase>.firebaseio.com/mytodo"
 });
 ```
-You may apply limits as with `Backbone.Firebase.Collection`.
+You may apply query methods as with `Backbone.Firebase.Collection`.
 
-**BE AWARE!** You do not need to call any functions that will affect _remote_ data. If you call
-`save()`, `sync()` or `fetch()` on the model, **the library will ignore it silently**.
+**BE AWARE!** You do not need to call any functions that will affect _remote_ data. If autoSync is enabled and you call
+`save()` or `fetch()` on the model, **the library will ignore it silently**.
+
+If autoSync is enabled, you should modify your model as you normally would, (via `set()` and `destroy()`) and _remote_ data
+will be instantly updated.
+
+#### autoSync: true
 
 ```javascript
-MyTodo.save();  // DOES NOTHING
-MyTodo.sync();  // DOES NOTHING
-MyTodo.fetch(); // DOES NOTHING
+var RealtimeModel = Backbone.Firebase.Model({
+  url: 'https://<your-firebase>.firebaseio.com/mytodo',
+  autoSync: true // true by default
+});
+
+var realtimeModel = new RealtimeModel();
+
+realtimeModel.on('sync', function(model) {
+  console.log('model loaded', model);
+});
+
+// calling .set() will sync the changes to firebase
+// this will fire the sync, change, and change:name events
+realtimeModel.set('name', 'Bob');
 ```
 
-You should modify your model as you normally would, (via `set()` and `destroy()`) and _remote_ data
-will be instantly updated.
+#### autoSync: false
+
+```javascript
+var RealtimeModel = Backbone.Firebase.Model({
+  url: 'https://<your-firebase>.firebaseio.com/mytodo',
+  autoSync: false
+});
+
+var realtimeModel = new RealtimeModel();
+
+realtimeModel.on('sync', function(model) {
+  console.log('model loaded', model);
+});
+
+// this will fire off the sync event
+realtimeModel.fetch();
+
+// calling .save() will sync the changes to firebase
+// this will fire the sync, change, and change:name events
+realtimeModel.save('name', 'Bob');
+
+```
 
 ### set(value)
 
