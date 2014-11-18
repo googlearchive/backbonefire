@@ -9,7 +9,7 @@
  */
 
 (function(_, Backbone) {
-  "use strict";
+  'use strict';
 
   Backbone.Firebase = {};
 
@@ -337,8 +337,8 @@
     _updateModel: function(model) {
       var modelObj = model.changedAttributes();
       _.each(model.changed, function(value, key) {
-        if (typeof value === "undefined" || value === null) {
-          if (key == "id") {
+        if (typeof value === 'undefined' || value === null) {
+          if (key == 'id') {
             delete modelObj[key];
           } else {
             modelObj[key] = null;
@@ -491,7 +491,7 @@
       create: function(model, options) {
         options = options ? _.clone(options) : {};
         if (options.wait) {
-          this._log("Wait option provided to create, ignoring.");
+          this._log('Wait option provided to create, ignoring.');
         }
         if (!model) {
           return false;
@@ -524,7 +524,7 @@
         this.remove(this.models, {silent: true});
         // Add new models.
         var ret = this.add(models, {silent: true});
-        // Trigger "reset" event.
+        // Trigger 'reset' event.
         if (!options.silent) {
           this.trigger('reset', this, options);
         }
@@ -556,7 +556,7 @@
             this, [model, options || {}]
           );
 
-          if (model.toJSON && typeof model.toJSON == "function") {
+          if (model.toJSON && typeof model.toJSON == 'function') {
             model = model.toJSON();
           }
 
@@ -594,7 +594,7 @@
 
         if (!item) {
           // TODO: Investigate: what is the right way to handle this case?
-          //throw new Error("Could not find model with ID " + model.id);
+          //throw new Error('Could not find model with ID ' + model.id);
           this._childAdded(snap);
           return;
         }
@@ -653,7 +653,7 @@
 
         ref = this.firebase.ref().child(model.id);
 
-        // if ".priority" is present setWithPriority
+        // if '.priority' is present setWithPriority
         // else do a regular update
         if (_.has(updateAttributes, '.priority')) {
           this._setWithPriority(ref, localAttributes);
@@ -681,11 +681,11 @@
         return updateAttributes;
       },
 
-      // Special case if ".priority" was updated - a merge is not
+      // Special case if '.priority' was updated - a merge is not
       // allowed so we'll have to do a full setWithPriority.
       _setWithPriority: function(ref, item) {
-        var priority = item[".priority"];
-        delete item[".priority"];
+        var priority = item['.priority'];
+        delete item['.priority'];
         ref.setWithPriority(item, priority);
         return item;
       },
