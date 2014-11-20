@@ -27,7 +27,6 @@ var Todos = Backbone.Firebase.Collection.extend({
   model: Todo
 });
 ```
->>>>>>> 0.5-release
 
 ## Downloading BackFire
 
@@ -48,7 +47,7 @@ To get started include Firebase and BackFire after the usual Backbone dependenci
 
 <!-- BackFire -->
 <script src="https://cdn.firebase.com/libs/backfire/0.5.0/backfire.js"></script>
-
+```
 
 Use the URL above to download both the minified and non-minified versions of BackFire from the
 Firebase CDN. You can also download them from the
