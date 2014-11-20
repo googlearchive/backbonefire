@@ -444,13 +444,13 @@
     function SyncCollection() {
 
       // Add handlers for remote events
-      this._syncEvent('child_added', '_childAdded');
-      this._syncEvent('child_moved', '_childMoved');
-      this._syncEvent('child_changed', '_childChanged');
-      this._syncEvent('child_removed', '_childRemoved');
+      this.firebase.on('child_added', _.bind(this._childAdded, this));
+      this.firebase.on('child_moved', _.bind(this._childMoved, this));
+      this.firebase.on('child_changed', _.bind(this._childChanged, this));
+      this.firebase.on('child_removed', _.bind(this._childRemoved, this));
 
-      // Once handler to emit 'sync' event.
-      this.firebase.once('value', _.bind(function() {
+      // Once handler to emit 'sync' event whenever data changes
+      this.firebase.on('value', _.bind(function() {
         this.trigger('sync', this, null, null);
       }, this));
 
@@ -463,20 +463,6 @@
     SyncCollection.protoype = {
       comparator: function(model) {
         return model.id;
-      },
-
-      // listen for events and apply the arguments to the _childSync function
-      _syncEvent: function(firebaseEvent, functionName) {
-        this.firebase.on(
-          firebaseEvent,
-          _.partial( _.bind(this._childSync, this), functionName )
-        );
-      },
-
-      // triger sync and route to the appropiate function
-      _childSync: function(event, snap) {
-        this.trigger('sync', this);
-        this[event](snap);
       },
 
       add: function(models, options) {
