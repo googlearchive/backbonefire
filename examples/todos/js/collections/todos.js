@@ -4,7 +4,7 @@ define([
 	'backbone',
 	'models/todo',
 	'firebase',
-	'backfire'
+	'backbonefire'
 ], function (_, Backbone, Todo) {
 	'use strict';
 

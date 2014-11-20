@@ -11,7 +11,7 @@ module.exports = function(config) {
       '../bower_components/backbone/backbone.js',
       '../bower_components/mockfirebase/browser/mockfirebase.js',
       'fixtures.js',
-      '../src/backfire.js',
+      '../src/backbonefire.js',
       './specs/*_test.js'
     ],
 

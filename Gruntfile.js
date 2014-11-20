@@ -6,8 +6,8 @@ module.exports = function(grunt) {
   grunt.initConfig({
     concat: {
       dist: {
-        src: ['src/backfire.js'],
-        dest: 'dist/backfire.js'
+        src: ['src/backbonefire.js'],
+        dest: 'dist/backbonefire.js'
       }
     },
 
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
       },
       app : {
         files : {
-          'dist/backfire.min.js' : ['src/backfire.js']
+          'dist/backbonefire.min.js' : ['src/backbonefire.js']
         }
       }
     },
@@ -44,12 +44,12 @@ module.exports = function(grunt) {
         'unused'       : true,
         'trailing'     : true
       },
-      all : ['src/backfire.js']
+      all : ['src/backbonefire.js']
     },
 
     watch : {
       scripts : {
-        files : 'src/backfire.js',
+        files : 'src/backbonefire.js',
         tasks : ['default', 'notify:watch'],
         options : {
           interrupt : true
@@ -79,8 +79,8 @@ module.exports = function(grunt) {
 
     copy: {
       main: {
-        src: 'src/backfire.js',
-        dest: 'examples/todos/js/backfire.js',
+        src: 'src/backbonefire.js',
+        dest: 'examples/todos/js/backbonefire.js',
       },
     },
 

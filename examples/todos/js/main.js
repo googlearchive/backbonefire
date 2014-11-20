@@ -23,7 +23,7 @@ require.config({
 		backbone: '../bower_components/backbone/backbone',
 		text: '../bower_components/requirejs-text/text',
 		firebase: '../bower_components/firebase/firebase',
-		backfire: 'backfire'
+		backbonefire: 'backbonefire'
 	}
 });
 

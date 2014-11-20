@@ -1,15 +1,15 @@
 {
-  "name": "backfire",
+  "name": "backbonefire",
   "description": "The officially supported Backbone binding for Firebase",
   "version": "0.0.0",
   "author": "Firebase <support@firebase.com> (https://www.firebase.com/)",
-  "homepage": "https://github.com/firebase/backfire/",
+  "homepage": "https://github.com/firebase/backbonefire/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/firebase/backfire.git"
+    "url": "https://github.com/firebase/backbonefire.git"
   },
   "bugs": {
-    "url": "https://github.com/firebase/backfire/issues"
+    "url": "https://github.com/firebase/backbonefire/issues"
   },
   "licenses": [
     {
@@ -22,7 +22,7 @@
     "firebase",
     "realtime"
   ],
-  "main": "dist/backfire.js",
+  "main": "dist/backbonefire.js",
   "files": [
     "dist/**",
     "LICENSE",

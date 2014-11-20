@@ -1,10 +1,10 @@
 /*!
- * BackFire is the officially supported Backbone binding for Firebase. The
+ * BackboneFire is the officially supported Backbone binding for Firebase. The
  * bindings let you use special model and collection types that allow for
  * synchronizing data with Firebase.
  *
- * BackFire 0.0.0
- * https://github.com/firebase/backfire/
+ * BackboneFire 0.0.0
+ * https://github.com/firebase/backbonefire/
  * License: MIT
  */
 
@@ -17,7 +17,7 @@
    * A utility for retrieving the key name of a Firebase ref or
    * DataSnapshot. This is backwards-compatible with `name()`
    * from Firebase 1.x.x and `key()` from Firebase 2.0.0+. Once
-   * support for Firebase 1.x.x is dropped in BackFire, this
+   * support for Firebase 1.x.x is dropped in BackboneFire, this
    * helper can be removed.
    */
   Backbone.Firebase._getKey = function(refOrSnapshot) {

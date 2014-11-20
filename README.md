@@ -1,16 +1,16 @@
-# BackFire
+# BackboneFire
 
-[![Build Status](https://travis-ci.org/firebase/backfire.svg?branch=master)](https://travis-ci.org/firebase/backfire)
-[![Version](https://badge.fury.io/gh/firebase%2Fbackfire.svg?branch=master)](http://badge.fury.io/gh/firebase%2Fbackfire)
+[![Build Status](https://travis-ci.org/firebase/backbonefire.svg?branch=master)](https://travis-ci.org/firebase/backbonefire)
+[![Version](https://badge.fury.io/gh/firebase%2Fbackbonefire.svg?branch=master)](http://badge.fury.io/gh/firebase%2Fbackbonefire)
 
-BackFire is the officially supported [Backbone](http://backbonejs.org) binding for Firebase. The bindings let you use special model and collection types that allow for synchronizing data with [Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backfire).
+BackboneFire is the officially supported [Backbone](http://backbonejs.org) binding for Firebase. The bindings let you use special model and collection types that allow for synchronizing data with [Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backbonefire).
 
 ## Live Demo
 
-Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.com/). This Todo App is a simple port of the TodoMVC app using Backfire.
+Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.com/). This Todo App is a simple port of the TodoMVC app using BackboneFire.
 
 ## Basic Usage
-Using BackFire collections and models is very similar to the regular ones in Backbone. To setup with Backfire use `Backbone.Firebase` rather than just `Backbone`.
+Using BackboneFire collections and models is very similar to the regular ones in Backbone. To setup with BackboneFire use `Backbone.Firebase` rather than just `Backbone`.
 
 ```javascript
 // This is a plain old Backbone Model
@@ -28,9 +28,9 @@ var Todos = Backbone.Firebase.Collection.extend({
 });
 ```
 
-## Downloading BackFire
+## Downloading BackboneFire
 
-To get started include Firebase and BackFire after the usual Backbone dependencies (jQuery, Underscore, and Backbone).
+To get started include Firebase and BackboneFire after the usual Backbone dependencies (jQuery, Underscore, and Backbone).
 
 ```html
 <!-- jQuery -->
@@ -45,29 +45,29 @@ To get started include Firebase and BackFire after the usual Backbone dependenci
 <!-- Firebase -->
 <script src="https://cdn.firebase.com/js/client/2.0.3/firebase.js"></script>
 
-<!-- BackFire -->
-<script src="https://cdn.firebase.com/libs/backfire/0.5.0/backfire.js"></script>
+<!-- BackboneFire -->
+<script src="https://cdn.firebase.com/libs/backbonefire/0.5.0/backbonefire.js"></script>
 ```
 
-Use the URL above to download both the minified and non-minified versions of BackFire from the
+Use the URL above to download both the minified and non-minified versions of BackboneFire from the
 Firebase CDN. You can also download them from the
-[releases page of this GitHub repository](https://github.com/firebase/backfire/releases).
-[Firebase](https://www.firebase.com/docs/web/quickstart.html?utm_medium=web&utm_source=backfire) and
+[releases page of this GitHub repository](https://github.com/firebase/backbonefire/releases).
+[Firebase](https://www.firebase.com/docs/web/quickstart.html?utm_medium=web&utm_source=backbonefire) and
 [Backbone](http://backbonejs.org/) can be downloaded directly from their respective websites.
 
-You can also install BackFire via Bower and its dependencies will be downloaded automatically:
+You can also install BackboneFire via Bower and its dependencies will be downloaded automatically:
 
 ```bash
-$ bower install backfire --save
+$ bower install backbonefire --save
 ```
 
-Once you've included BackFire and its dependencies into your project, you will have access to the `Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
+Once you've included BackboneFire and its dependencies into your project, you will have access to the `Backbone.Firebase.Collection`, and `Backbone.Firebase.Model` objects.
 
 
 ## Getting Started with Firebase
 
-BackFire requires Firebase in order to sync data. You can
-[sign up here](https://www.firebase.com/signup/?utm_medium=web&utm_source=backfire) for a free
+BackboneFire requires Firebase in order to sync data. You can
+[sign up here](https://www.firebase.com/signup/?utm_medium=web&utm_source=backbonefire) for a free
 account.
 
 ## autoSync
@@ -270,12 +270,12 @@ MyTodo.destroy(); // Model is instantly removed from Firebase (and other clients
 
 ## Contributing
 
-If you'd like to contribute to BackFire, you'll need to run the following commands to get your
+If you'd like to contribute to BackboneFire, you'll need to run the following commands to get your
 environment set up:
 
 ```bash
-$ git clone https://github.com/firebase/backfire.git
-$ cd backfire               # go to the backfire directory
+$ git clone https://github.com/firebase/backbonefire.git
+$ cd backbonefire           # go to the backbonefire directory
 $ npm install -g grunt-cli  # globally install grunt task runner
 $ npm install -g bower      # globally install Bower package manager
 $ npm install               # install local npm build / test dependencies
@@ -283,8 +283,8 @@ $ bower install             # install local JavaScript dependencies
 $ grunt watch               # watch for source file changes
 ```
 
-`grunt watch` will watch for changes to `src/backfire.js` and lint and minify the source file when a
-change occurs. The output files - `backfire.js` and `backfire.min.js` - are written to the `/dist/`
+`grunt watch` will watch for changes to `src/backbonefire.js` and lint and minify the source file when a
+change occurs. The output files - `backbonefire.js` and `backbonefire.min.js` - are written to the `/dist/`
 directory.
 
 You can run the test suite via the command line using `grunt test`.
