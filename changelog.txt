@@ -1,0 +1,9 @@
+important - Changed library name to BackboneFire. It is now available as `backbonefire` on Bower.
+feature - Added `autoSync` property for one-time syncing of `Backbone.Firebase.Model` and `Backbone.Firebase.Collection`.
+feature - Added support for `url` property to create a Firebase reference for `Backbone.Firebase.Model` and `Bacbone.Firebase.Collection`.
+feature - Added a Firebase reference for each `Model` in a `Backbone.Firebase.Collection`.
+removed - Removed `firebase` property from `Backbone.Firebase.Model` and `Bacbone.Firebase.Collection`.
+removed - Removed `Backbone.Firebase()` constructor for syncing a `Backbone.Model` and `Backbone.Collection`.
+fixed - The `sync` event for a `Backbone.Firebase.Collection` is called on value changes.
+fixed - Models are properly prepared when adding to a `Backbone.Firebase.Collection`.
+fixed - Models are properly destroyed when calling `Backbone.Firebase.Model.destroy()`.
