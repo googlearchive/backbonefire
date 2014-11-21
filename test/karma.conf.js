@@ -3,16 +3,16 @@ module.exports = function(config) {
     frameworks: ['mocha', 'chai', 'sinon'],
 
     preprocessors: {
-      '**/*.coffee': ['coffee'],
       '../src/*.js': 'coverage'
     },
 
     files: [
       '../bower_components/underscore/underscore.js',
       '../bower_components/backbone/backbone.js',
-      '../test/fixtures.coffee',
-      '../src/backfire.js',
-      'specs/*_test.coffee'
+      '../bower_components/mockfirebase/browser/mockfirebase.js',
+      'fixtures.js',
+      '../src/backbonefire.js',
+      './specs/*_test.js'
     ],
 
     reporters: ['spec', 'failed', 'coverage'],

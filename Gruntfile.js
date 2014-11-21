@@ -6,8 +6,8 @@ module.exports = function(grunt) {
   grunt.initConfig({
     concat: {
       dist: {
-        src: ['src/backfire.js'],
-        dest: 'dist/backfire.js'
+        src: ['src/backbonefire.js'],
+        dest: 'dist/backbonefire.js'
       }
     },
 
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
       },
       app : {
         files : {
-          'dist/backfire.min.js' : ['src/backfire.js']
+          'dist/backbonefire.min.js' : ['src/backbonefire.js']
         }
       }
     },
@@ -44,12 +44,12 @@ module.exports = function(grunt) {
         'unused'       : true,
         'trailing'     : true
       },
-      all : ['src/backfire.js']
+      all : ['src/backbonefire.js']
     },
 
     watch : {
       scripts : {
-        files : 'src/backfire.js',
+        files : 'src/backbonefire.js',
         tasks : ['default', 'notify:watch'],
         options : {
           interrupt : true
@@ -75,7 +75,24 @@ module.exports = function(grunt) {
         autowatch: false,
         singleRun: true
       }
+    },
+
+    copy: {
+      main: {
+        src: 'src/backbonefire.js',
+        dest: 'examples/todos/js/backbonefire.js',
+      },
+    },
+
+    serve: {
+      options: {
+        port: 9000,
+          'serve': {
+            'path': 'examples/todos'
+        }
+      }
     }
+
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');
@@ -84,10 +101,13 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-copy');
+  grunt.loadNpmTasks('grunt-serve');
 
   // Unit tests
   grunt.registerTask('test', ['karma:unit']);
 
   grunt.registerTask('build', ['jshint', 'concat', 'uglify']);
   grunt.registerTask('default', ['build', 'test']);
+  grunt.registerTask('todo', ['build', 'serve']);
 };
