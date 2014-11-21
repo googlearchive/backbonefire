@@ -28,8 +28,8 @@
    * A utility for resolving whether an item will have the autoSync
    * property. Models can have this property on the prototype.
    */
-  Backbone.Firebase._determineAutoSync = function(self, options) {
-    var proto = Object.getPrototypeOf(self);
+  Backbone.Firebase._determineAutoSync = function(model, options) {
+    var proto = Object.getPrototypeOf(model);
     return _.extend(
       {
         autoSync: proto.hasOwnProperty('autoSync') ? proto.autoSync : true
