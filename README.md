@@ -129,11 +129,14 @@ You may also apply an `orderByChild` or some other
 [query](https://www.firebase.com/docs/web/guide/retrieving-data.html#section-queries) on a
 reference and pass it in:
 
+### Queries
+
 ```javascript
 var TodoList = Backbone.Firebase.Collection.extend({
   url: new Firebase('https://<your-firebase>.firebaseio.com/todos').orderByChild('importance')
 });
 ```
+
 Any models added to the collection will be synchronized to the provided Firebase. Any other clients
 using the Backbone binding will also receive `add`, `remove` and `changed` events on the collection
 as appropriate.
@@ -199,11 +202,24 @@ may extend this object, and must provide a Firebase URL or a Firebase reference 
 property.
 
 ```javascript
-var MyTodo = Backbone.Firebase.Model.extend({
+var Todo = Backbone.Firebase.Model.extend({
   url: "https://<your-firebase>.firebaseio.com/mytodo"
 });
 ```
 You may apply query methods as with `Backbone.Firebase.Collection`.
+
+### urlRoot
+```javascript
+
+var Todo = Backbone.Firebase.Model.extend({
+  urlRoot: 'https://<your-firebase>.firebaseio.com/todos'
+});
+
+// The url for this todo will be https://<your-firebase>.firebaseio.com/todos/1
+var todo = new Todo({
+  id: 1
+});
+```
 
 **BE AWARE!** You do not need to call any functions that will affect _remote_ data. If autoSync is enabled and you call
 `save()` or `fetch()` on the model, **the library will ignore it silently**.
