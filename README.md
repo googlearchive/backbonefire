@@ -137,6 +137,10 @@ var TodoList = Backbone.Firebase.Collection.extend({
 });
 ```
 
+### url as a function
+
+### initialize function
+
 Any models added to the collection will be synchronized to the provided Firebase. Any other clients
 using the Backbone binding will also receive `add`, `remove` and `changed` events on the collection
 as appropriate.
