@@ -13,6 +13,9 @@ Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.c
 ## Basic Usage
 Using BackboneFire collections and models is very similar to the regular ones in Backbone. To setup with BackboneFire use `Backbone.Firebase` rather than just `Backbone`.
 
+**Note: A `Backbone.Firebase.Model` should not be used with a `Backbone.Firebase.Collection`. Use a regular
+`Backbone.Model` with a `Backbone.Firebase.Collection`.**
+
 ```javascript
 // This is a plain old Backbone Model
 var Todo = Backbone.Model.extend({
@@ -129,11 +132,29 @@ You may also apply an `orderByChild` or some other
 [query](https://www.firebase.com/docs/web/guide/retrieving-data.html#section-queries) on a
 reference and pass it in:
 
+### Queries
+
 ```javascript
 var TodoList = Backbone.Firebase.Collection.extend({
   url: new Firebase('https://<your-firebase>.firebaseio.com/todos').orderByChild('importance')
 });
 ```
+
+### url as a function
+
+The `url` property can be set with a function. This function must return a Firebase ref or a url.
+
+```javascript
+var TodoList = Backbone.Firebase.Collection.extend({
+  url: function() {
+    return new Firebase(...);
+  }
+});
+```
+
+
+### initialize function
+
 Any models added to the collection will be synchronized to the provided Firebase. Any other clients
 using the Backbone binding will also receive `add`, `remove` and `changed` events on the collection
 as appropriate.
@@ -199,11 +220,25 @@ may extend this object, and must provide a Firebase URL or a Firebase reference 
 property.
 
 ```javascript
-var MyTodo = Backbone.Firebase.Model.extend({
+var Todo = Backbone.Firebase.Model.extend({
   url: "https://<your-firebase>.firebaseio.com/mytodo"
 });
 ```
 You may apply query methods as with `Backbone.Firebase.Collection`.
+
+### urlRoot
+The `urlRoot` property can be used to dynamically set the Firebase reference from the model's id.
+
+```javascript
+var Todo = Backbone.Firebase.Model.extend({
+  urlRoot: 'https://<your-firebase>.firebaseio.com/todos'
+});
+
+// The url for this todo will be https://<your-firebase>.firebaseio.com/todos/1
+var todo = new Todo({
+  id: 1
+});
+```
 
 **BE AWARE!** You do not need to call any functions that will affect _remote_ data. If autoSync is enabled and you call
 `save()` or `fetch()` on the model, **the library will ignore it silently**.
