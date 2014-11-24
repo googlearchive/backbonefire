@@ -13,6 +13,9 @@ Play around with our [realtime Todo App demo](https://backbonefire.firebaseapp.c
 ## Basic Usage
 Using BackboneFire collections and models is very similar to the regular ones in Backbone. To setup with BackboneFire use `Backbone.Firebase` rather than just `Backbone`.
 
+**Note: A `Backbone.Firebase.Model` should not be used with a `Backbone.Firebase.Collection`. Use a regular
+`Backbone.Model` with a `Backbone.Firebase.Collection`.**
+
 ```javascript
 // This is a plain old Backbone Model
 var Todo = Backbone.Model.extend({
@@ -139,6 +142,17 @@ var TodoList = Backbone.Firebase.Collection.extend({
 
 ### url as a function
 
+The `url` property can be set with a function. This function must return a Firebase ref or a url.
+
+```javascript
+var TodoList = Backbone.Firebase.Collection.extend({
+  url: function() {
+    return new Firebase(...);
+  }
+});
+```
+
+
 ### initialize function
 
 Any models added to the collection will be synchronized to the provided Firebase. Any other clients
@@ -213,8 +227,9 @@ var Todo = Backbone.Firebase.Model.extend({
 You may apply query methods as with `Backbone.Firebase.Collection`.
 
 ### urlRoot
-```javascript
+The `urlRoot` property can be used to dynamically set the Firebase reference from the model's id.
 
+```javascript
 var Todo = Backbone.Firebase.Model.extend({
   urlRoot: 'https://<your-firebase>.firebaseio.com/todos'
 });
