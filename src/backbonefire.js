@@ -461,10 +461,6 @@
     }
 
     SyncCollection.protoype = {
-      comparator: function(model) {
-        return model.id;
-      },
-
       add: function(models, options) {
         var parsed = this._parseModels(models);
         options = options ? _.clone(options) : {};
@@ -761,7 +757,11 @@
 
       };
 
-    }
+    },
+
+    comparator: function(model) {
+      return model.id;
+    },
 
   });
 
