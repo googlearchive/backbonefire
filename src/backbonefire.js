@@ -390,7 +390,7 @@
       create: function(model, options) {
         model.id = Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
-        return Backbone.Collection.prototype.create.apply(this, [model, options]);
+        return Backbone.Collection.prototype.create.call(this, model, options);
       },
       /**
        * Create an id from a Firebase push-id and call Backbone.add, which
@@ -400,7 +400,7 @@
       add: function(model, options) {
         model.id = Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
-        return Backbone.Collection.prototype.add.apply(this, [model, options]);
+        return Backbone.Collection.prototype.add.call(this, model, options);
       },
       /**
        * Proxy to Backbone.Firebase.sync
@@ -545,8 +545,8 @@
           }
 
           // call Backbone's prepareModel to apply options
-          model = Backbone.Collection.prototype._prepareModel.apply(
-            this, [model, options || {}]
+          model = Backbone.Collection.prototype._prepareModel.call(
+            this, model, options
           );
 
           if (model.toJSON && typeof model.toJSON == 'function') {
@@ -565,9 +565,9 @@
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
-          Backbone.Collection.prototype.add.apply(this, [model], {silent: true});
+          Backbone.Collection.prototype.add.call(this, [model], {silent: true});
         } else {
-          Backbone.Collection.prototype.add.apply(this, [model]);
+          Backbone.Collection.prototype.add.call(this, [model]);
         }
         this.get(model.id)._remoteAttributes = model;
       },
@@ -616,13 +616,13 @@
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
-          Backbone.Collection.prototype.remove.apply(
+          Backbone.Collection.prototype.remove.call(
             this, [model], {silent: true}
           );
         } else {
           // trigger sync because data has been received from the server
           this.trigger('sync', this);
-          Backbone.Collection.prototype.remove.apply(this, [model]);
+          Backbone.Collection.prototype.remove.call(this, [model]);
         }
       },
 
