@@ -321,22 +321,7 @@ describe('Backbone.Firebase.Collection', function() {
     });
 
     describe('#_childMoved', function() {
-
-      it('shoud call _log', function() {
-        sinon.spy(collection, '_log');
-        var mockSnap = new MockSnap({
-          name: '1',
-          val: {
-            name: 'David'
-          }
-        });
-        collection._childMoved(mockSnap);
-
-        expect(collection._log.calledOnce).to.be.ok;
-
-        collection._log.restore();
-      });
-
+      it('should set priority on model');
     });
 
     describe('#reset', function() {

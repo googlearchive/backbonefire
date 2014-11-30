@@ -573,8 +573,12 @@
       },
 
       _childMoved: function(snap) {
-        // TODO: Investigate: can this occur without the ID changing?
-        this._log('_childMoved called with ' + snap.val());
+        // child_moved is emitted when the priority for a child is changed, so it
+        // should update the priority of the model and maybe trigger a sort
+        // 
+        // var model = _checkId(snap)
+        // model.priority = snap.getPriority()
+        // if (isSortedByPriority()) trigger('sort')
       },
 
       // when a model has changed remotely find differences between the
