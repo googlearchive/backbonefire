@@ -572,7 +572,7 @@
         this.get(model.id)._remoteAttributes = model;
       },
 
-      _childMoved: function(snap) {
+      _childMoved: function(/* snap */) {
         // child_moved is emitted when the priority for a child is changed, so it
         // should update the priority of the model and maybe trigger a sort
         // 
