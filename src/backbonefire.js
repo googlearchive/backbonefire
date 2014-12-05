@@ -390,7 +390,7 @@
       create: function(model, options) {
         model.id = Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
-        return Backbone.Collection.prototype.create.apply(this, [model, options]);
+        return Backbone.Collection.prototype.create.call(this, model, options);
       },
       /**
        * Create an id from a Firebase push-id and call Backbone.add, which
@@ -400,7 +400,7 @@
       add: function(model, options) {
         model.id = Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
-        return Backbone.Collection.prototype.add.apply(this, [model, options]);
+        return Backbone.Collection.prototype.add.call(this, model, options);
       },
       /**
        * Proxy to Backbone.Firebase.sync
@@ -461,10 +461,6 @@
     }
 
     SyncCollection.protoype = {
-      comparator: function(model) {
-        return model.id;
-      },
-
       add: function(models, options) {
         var parsed = this._parseModels(models);
         options = options ? _.clone(options) : {};
@@ -549,8 +545,8 @@
           }
 
           // call Backbone's prepareModel to apply options
-          model = Backbone.Collection.prototype._prepareModel.apply(
-            this, [model, options || {}]
+          model = Backbone.Collection.prototype._prepareModel.call(
+            this, model, options
           );
 
           if (model.toJSON && typeof model.toJSON == 'function') {
@@ -569,16 +565,20 @@
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
-          Backbone.Collection.prototype.add.apply(this, [model], {silent: true});
+          Backbone.Collection.prototype.add.call(this, [model], {silent: true});
         } else {
-          Backbone.Collection.prototype.add.apply(this, [model]);
+          Backbone.Collection.prototype.add.call(this, [model]);
         }
         this.get(model.id)._remoteAttributes = model;
       },
 
-      _childMoved: function(snap) {
-        // TODO: Investigate: can this occur without the ID changing?
-        this._log('_childMoved called with ' + snap.val());
+      _childMoved: function(/* snap */) {
+        // child_moved is emitted when the priority for a child is changed, so it
+        // should update the priority of the model and maybe trigger a sort
+        // 
+        // var model = _checkId(snap)
+        // model.priority = snap.getPriority()
+        // if (isSortedByPriority()) trigger('sort')
       },
 
       // when a model has changed remotely find differences between the
@@ -620,13 +620,13 @@
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
-          Backbone.Collection.prototype.remove.apply(
+          Backbone.Collection.prototype.remove.call(
             this, [model], {silent: true}
           );
         } else {
           // trigger sync because data has been received from the server
           this.trigger('sync', this);
-          Backbone.Collection.prototype.remove.apply(this, [model]);
+          Backbone.Collection.prototype.remove.call(this, [model]);
         }
       },
 
@@ -761,7 +761,11 @@
 
       };
 
-    }
+    },
+
+    comparator: function(model) {
+      return model.id;
+    },
 
   });
 
