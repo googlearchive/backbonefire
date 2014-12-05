@@ -69,15 +69,6 @@ describe('Backbone.Firebase.Model', function() {
 
   });
 
-  it('should update model', function() {
-    // TODO: Test _updateModel
-  });
-
-  it('should set changed attributes to null', function() {
-    // TODO: Test _updateModel
-
-  });
-
   describe('#_unsetAttributes', function() {
 
     it('should unset attributes that have been deleted on the server', function() {
@@ -157,32 +148,34 @@ describe('Backbone.Firebase.Model', function() {
       });
     });
 
-    describe('ignored methods', function() {
+    describe('#fetch', function() {
 
-      beforeEach(function() {
-        sinon.spy(console, 'warn');
-      });
-
-      afterEach(function() {
-        console.warn.restore();
-      });
-
-      it('should do nothing when save is called', function() {
+      it('should trigger "sync" when fetch is called', function() {
         var model = new Model();
-        model.save();
-        return expect(console.warn.calledOnce).to.be.ok;
-      });
-
-      it('should do nothing when fetch is called', function() {
-        var model = new Model();
+        var syncIsCalled = false;
         model.fetch();
-        return expect(console.warn.calledOnce).to.be.ok;
+        model.on('sync', function() {
+          syncIsCalled = true;
+        });
+        model.firebase.flush();
+        return expect(syncIsCalled).to.be.ok;
       });
 
-      it('should do nothing when sync is called', function() {
-        var model = new Model();
-        model.sync();
-        return expect(console.warn.calledOnce).to.be.ok;
+    });
+
+    describe('#sync', function() {
+
+      // Backbone.Firebase.Model.sync should proxy to Backbone.Firebase.sync
+      // if it comes from a OnceModel
+      it('should call Backbone.Firebase.sync', function() {
+        sinon.spy(Backbone.Firebase, 'sync');
+
+        model = new Model();
+
+        model.sync('read', model, null);
+
+        expect(Backbone.Firebase.sync.calledOnce).to.be.ok;
+        Backbone.Firebase.sync.restore();
       });
 
     });

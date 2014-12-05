@@ -218,18 +218,11 @@
     }
 
     SyncModel.protoype = {
-      save: function() {
-        console.warn('Save called on a Firebase model with autoSync enabled, ignoring.');
-      },
-      fetch: function() {
-        console.warn('Save called on a Firebase model with autoSync enabled, ignoring.');
+      fetch: function(options) {
+        this.trigger('sync', this, options);
       },
       sync: function(method, model, options) {
-        if(method === 'delete') {
-          Backbone.Firebase.sync(method, model, options);
-        } else {
-          console.warn('Sync called on a Fireabse model with autoSync enabled, ignoring.');
-        }
+        Backbone.Firebase.sync(method, model, options);
       }
     };
 
@@ -442,7 +435,7 @@
   var SyncCollection = (function() {
 
     function SyncCollection() {
-
+      this._initialSync = {};
       // Add handlers for remote events
       this.firebase.on('child_added', _.bind(this._childAdded, this));
       this.firebase.on('child_moved', _.bind(this._childMoved, this));
@@ -450,9 +443,15 @@
       this.firebase.on('child_removed', _.bind(this._childRemoved, this));
 
       // Once handler to emit 'sync' event whenever data changes
-      this.firebase.on('value', _.bind(function() {
+      this.firebase.on('value', function() {
+        this._initialSync.resolve = true;
+        this._initialSync.success = true;
         this.trigger('sync', this, null, null);
-      }, this));
+      }, function(err) {
+        this._initialSync.resolve = true;
+        this._initialSync.error = err;
+        this.trigger('error', this, err, null);
+      }, this);
 
       // Handle changes in any local models.
       this.listenTo(this, 'change', this._updateModel, this);
@@ -524,6 +523,25 @@
         return ret;
       },
 
+      fetch: function(options) {
+        var fetchInterval = setInterval(_.bind(function() {
+          if(this._initialSync.resolve) {
+
+            if(this._initialSync.success) {
+              this.trigger('sync', this, null, options);
+            }
+            else if(this._initialSync.err) {
+              this.trigger('err', this, this._initialSync.err, options);
+            }
+
+            // fire off any optional callbacks
+            Backbone.Firebase._onCompleteCheck(this._initialSync.err, this, options);
+
+            clearInterval(fetchInterval);
+          }
+        }, this));
+      },
+
       _log: function(msg) {
         if (console && console.log) {
           console.log(msg);
@@ -572,13 +590,10 @@
         this.get(model.id)._remoteAttributes = model;
       },
 
-      _childMoved: function(/* snap */) {
-        // child_moved is emitted when the priority for a child is changed, so it
-        // should update the priority of the model and maybe trigger a sort
-        // 
-        // var model = _checkId(snap)
-        // model.priority = snap.getPriority()
-        // if (isSortedByPriority()) trigger('sort')
+      // TODO: child_moved is emitted when the priority for a child is changed, so it
+      // should update the priority of the model and maybe trigger a sort
+      _childMoved: function() {
+
       },
 
       // when a model has changed remotely find differences between the
@@ -750,7 +765,7 @@
 
         var newItem = new BaseModel(attrs, opts);
         newItem.autoSync = false;
-        newItem.firebase = self.firebase.child(newItem.id);
+        newItem.firebase = self.firebase.ref().child(newItem.id);
         newItem.sync = Backbone.Firebase.sync;
         newItem.on('change', function(model) {
           var updated = Backbone.Firebase.Model.prototype._updateModel(model);

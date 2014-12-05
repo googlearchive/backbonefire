@@ -375,6 +375,17 @@ describe('Backbone.Firebase.Collection', function() {
 
     });
 
+    describe('#fetch', function() {
+
+      it('should fetch when _initialSync has been resolved', function() {
+        collection.fetch();
+        collection.firebase.flush();
+
+        expect(collection._initialSync.resolve).to.be.ok;
+      });
+
+    });
+
     describe('#_log', function() {
 
       beforeEach(function() {
@@ -755,6 +766,29 @@ describe('Backbone.Firebase.Collection', function() {
         expect(Backbone.Collection.prototype.create.calledOnce).to.be.ok;
 
         Backbone.Collection.prototype.create.restore();
+      });
+
+    });
+
+    describe('#fetch', function() {
+
+      it('should call the success option if provided', function() {
+        var options = {
+          success: sinon.spy()
+        };
+        collection.fetch(options);
+        collection.firebase.flush();
+        expect(options.success.calledOnce).to.be.ok;
+      });
+
+      it('should trigger the "sync" event', function() {
+        var isSyncCalled = false;
+        collection.fetch();
+        collection.on('sync', function() {
+          isSyncCalled = true;
+        });
+        collection.firebase.flush();
+        expect(isSyncCalled).to.be.ok;
       });
 
     });
