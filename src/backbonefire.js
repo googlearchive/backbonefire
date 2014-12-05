@@ -443,15 +443,25 @@
       this.firebase.on('child_removed', _.bind(this._childRemoved, this));
 
       // Once handler to emit 'sync' event whenever data changes
-      this.firebase.on('value', function() {
-        this._initialSync.resolve = true;
-        this._initialSync.success = true;
-        this.trigger('sync', this, null, null);
-      }, function(err) {
-        this._initialSync.resolve = true;
-        this._initialSync.error = err;
-        this.trigger('error', this, err, null);
-      }, this);
+      // Defer the listener incase the data is cached, because
+      // then the once call would be synchronous
+      _.defer(_.bind(function() {
+
+        this.firebase.once('value', function() {
+          // indicate that the call has been received from the server
+          // and the data has successfully loaded
+          this._initialSync.resolve = true;
+          this._initialSync.success = true;
+          this.trigger('sync', this, null, null);
+        }, function(err) {
+          // indicate that the call has been received from the server
+          // and that an error has occurred
+          this._initialSync.resolve = true;
+          this._initialSync.error = err;
+          this.trigger('error', this, err, null);
+        }, this);
+
+      }, this));
 
       // Handle changes in any local models.
       this.listenTo(this, 'change', this._updateModel, this);
@@ -461,6 +471,7 @@
 
     SyncCollection.protoype = {
       add: function(models, options) {
+        // prepare models
         var parsed = this._parseModels(models);
         options = options ? _.clone(options) : {};
         options.success =
@@ -523,6 +534,11 @@
         return ret;
       },
 
+      // This function does not actually fetch data from the server.
+      // Rather, the "sync" event is fired when data has been loaded
+      // from the server. Since the _initialSync property will indicate
+      // whether the initial load has occurred, the "sync" event can
+      // be fired once _initialSync has been resolved.
       fetch: function(options) {
         var fetchInterval = setInterval(_.bind(function() {
           if(this._initialSync.resolve) {
