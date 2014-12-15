@@ -195,6 +195,52 @@
   };
 
   /**
+   * A naive promise-like implementation. Requires a syncPromise object.
+   *
+   * syncPromise is an object that has three properties.
+   *  - resolve (bool) - Has the data been retreived from the server?
+   *  - success (bool) - Was the data retrieved successfully?
+   *  - error (Error)  - If there was an error, return the error object.
+   *
+   * This function relies on the syncPromise object being resolved from an
+   * outside source. When the "resolve" property has been set to true,
+   * the "success" and "error" functions will be evaluated.
+   */
+  Backbone.Firebase._promiseEvent = function(params) {
+    // setup default values
+    var syncPromise = params.syncPromise;
+    var success = params.success;
+    var error = params.error;
+    var context = params.context || this;
+    var completed = params.completed;
+
+    // set up an interval that checks to see if data has been synced from the server
+    var promiseInterval = setInterval(_.bind(function() {
+      // if the result has been retrieved from the server
+      if(syncPromise.resolve) {
+
+        // on success fire off the event
+        if(syncPromise.success) {
+          success.call(context);
+        }
+        // on error fire off the returned error
+        else if(syncPromise.err) {
+          error.call(context, syncPromise.err);
+        }
+
+        // fire off the provided completed event
+        if(completed) {
+          completed.call(context);
+        }
+
+        // the "promise" has been resolved, clear the interval
+        clearInterval(promiseInterval);
+      }
+    }, context));
+
+  };
+
+  /**
    * Model responsible for autoSynced objects
    * This model is never directly used. The Backbone.Firebase.Model will
    * inherit from this if it is an autoSynced model
@@ -540,22 +586,19 @@
       // whether the initial load has occurred, the "sync" event can
       // be fired once _initialSync has been resolved.
       fetch: function(options) {
-        var fetchInterval = setInterval(_.bind(function() {
-          if(this._initialSync.resolve) {
-
-            if(this._initialSync.success) {
-              this.trigger('sync', this, null, options);
-            }
-            else if(this._initialSync.err) {
-              this.trigger('err', this, this._initialSync.err, options);
-            }
-
-            // fire off any optional callbacks
+        Backbone.Firebase._promiseEvent({
+          syncPromise: this._initialSync,
+          context: this,
+          success: function() {
+            this.trigger('sync', this, null, options);
+          },
+          error: function(err) {
+            this.trigger('err', this, err, options);
+          },
+          complete: function() {
             Backbone.Firebase._onCompleteCheck(this._initialSync.err, this, options);
-
-            clearInterval(fetchInterval);
           }
-        }, this));
+        });
       },
 
       _log: function(msg) {

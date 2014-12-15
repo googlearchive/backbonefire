@@ -377,11 +377,15 @@ describe('Backbone.Firebase.Collection', function() {
 
     describe('#fetch', function() {
 
-      it('should fetch when _initialSync has been resolved', function() {
+      it('should call Backbone.Firebase._promiseEvent', function() {
+        sinon.spy(Backbone.Firebase, '_promiseEvent');
+
         collection.fetch();
         collection.firebase.flush();
 
-        expect(collection._initialSync.resolve).to.be.ok;
+        expect(Backbone.Firebase._promiseEvent.calledOnce).to.be.ok;
+
+        Backbone.Firebase._promiseEvent.restore();
       });
 
     });
