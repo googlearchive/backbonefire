@@ -34,11 +34,11 @@ describe('Backbone.Firebase', function() {
 
     it('should resolve with an error', function() {
       var errorCalled = false;
-      syncPromise.error = new Error('Error!');
+      syncPromise.err = new Error('Error!');
       Backbone.Firebase._promiseEvent({
         syncPromise: syncPromise,
         error: function() {
-          var errorCalled = true;
+          errorCalled = true;
         },
         context: this
       });

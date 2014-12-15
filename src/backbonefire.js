@@ -503,7 +503,7 @@
           // indicate that the call has been received from the server
           // and that an error has occurred
           this._initialSync.resolve = true;
-          this._initialSync.error = err;
+          this._initialSync.err = err;
           this.trigger('error', this, err, null);
         }, this);
 

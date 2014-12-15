@@ -388,6 +388,16 @@ describe('Backbone.Firebase.Collection', function() {
         Backbone.Firebase._promiseEvent.restore();
       });
 
+      it('should fire success', function() {
+        var successCalled = false;
+        collection.fetch();
+        collection.on('sync', function() {
+          successCalled = true;
+        });
+        collection.firebase.flush();
+        expect(successCalled).to.be.ok;
+      });
+
     });
 
     describe('#_log', function() {
