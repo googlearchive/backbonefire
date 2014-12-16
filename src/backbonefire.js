@@ -249,11 +249,19 @@
 
     function SyncModel() {
       // Set up sync events
-
+      this._initialSync = {};
       // apply remote changes locally
       this.firebase.on('value', function(snap) {
         this._setLocal(snap);
+        this._initialSync.resolve = true;
+        this._initialSync.success = true;
         this.trigger('sync', this, null, null);
+      }, function(err) {
+        // indicate that the call has been received from the server
+        // and that an error has occurred
+        this._initialSync.resolve = true;
+        this._initialSync.err = err;
+        this.trigger('error', this, err, null);
       }, this);
 
       // apply local changes remotely
@@ -265,7 +273,19 @@
 
     SyncModel.protoype = {
       fetch: function(options) {
-        this.trigger('sync', this, options);
+        Backbone.Firebase._promiseEvent({
+          syncPromise: this._initialSync,
+          context: this,
+          success: function() {
+            this.trigger('sync', this, null, options);
+          },
+          error: function(err) {
+            this.trigger('err', this, err, options);
+          },
+          complete: function() {
+            Backbone.Firebase._onCompleteCheck(this._initialSync.err, this, options);
+          }
+        });
       },
       sync: function(method, model, options) {
         Backbone.Firebase.sync(method, model, options);

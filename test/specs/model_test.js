@@ -161,6 +161,18 @@ describe('Backbone.Firebase.Model', function() {
         return expect(syncIsCalled).to.be.ok;
       });
 
+      it('should call Backbone.Firebase._promiseEvent', function() {
+        var model = new Model();
+        sinon.spy(Backbone.Firebase, '_promiseEvent');
+
+        model.fetch();
+        model.firebase.flush();
+
+        expect(Backbone.Firebase._promiseEvent.calledOnce).to.be.ok;
+
+        Backbone.Firebase._promiseEvent.restore();
+      });
+
     });
 
     describe('#sync', function() {
