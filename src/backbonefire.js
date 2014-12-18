@@ -286,9 +286,6 @@
             Backbone.Firebase._onCompleteCheck(this._initialSync.err, this, options);
           }
         });
-      },
-      sync: function(method, model, options) {
-        Backbone.Firebase.sync(method, model, options);
       }
     };
 
@@ -311,14 +308,6 @@
       });
 
     }
-
-    OnceModel.protoype = {
-
-      sync: function(method, model, options) {
-        Backbone.Firebase.sync(method, model, options);
-      }
-
-    };
 
     return OnceModel;
   }());
@@ -360,7 +349,10 @@
       }
 
     },
-
+    
+    sync: function(method, model, options) {
+      Backbone.Firebase.sync(method, model, options);
+    },
 
     /**
      * Siliently set the id of the model to the snapshot key
