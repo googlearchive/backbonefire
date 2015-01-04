@@ -228,7 +228,7 @@
         if(method === 'delete') {
           Backbone.Firebase.sync(method, model, options);
         } else {
-          console.warn('Sync called on a Fireabse model with autoSync enabled, ignoring.');
+          console.warn('Sync called on a Firebase model with autoSync enabled, ignoring.');
         }
       }
     };
