@@ -241,6 +241,21 @@
   };
 
   /**
+   * A utility for athenticating with a custom token
+   */
+  Backbone.Firebase._authWithCustomToken = function(model, options) {
+    if(typeof options !== 'undefined' && typeof options.auth_token !== 'undefined'){
+      model.firebase.ref().authWithCustomToken(options.auth_token, function(error, authData) {
+        if (error) {
+          model.trigger('firebase:login:error', error, null, null);
+        } else {
+          model.trigger('firebase:login:success', authData, null, null);
+        }
+      });
+    }
+  };
+
+  /**
    * Model responsible for autoSynced objects
    * This model is never directly used. The Backbone.Firebase.Model will
    * inherit from this if it is an autoSynced model
@@ -339,6 +354,9 @@
       default:
         Backbone.Firebase._throwError('url parameter required');
       }
+
+      // We handle login with a custom token
+      Backbone.Firebase._authWithCustomToken(this, options);
 
       if(!this.autoSync) {
         OnceModel.apply(this, arguments);
@@ -817,6 +835,9 @@
       default:
         throw new Error('url parameter required');
       }
+
+      // We handle login with a custom token
+      Backbone.Firebase._authWithCustomToken(this, options);
 
       // if we are not autoSyncing, the model needs
       // to be a non-autoSynced model
