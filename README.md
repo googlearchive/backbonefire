@@ -159,9 +159,6 @@ Any models added to the collection will be synchronized to the provided Firebase
 using the Backbone binding will also receive `add`, `remove` and `changed` events on the collection
 as appropriate.
 
-**BE AWARE!** If autoSync is set to true, you do not need to call any functions that will affect _remote_ data. If you call
-`fetch()` on the collection, **the library will ignore it silently**. However, if autoSync is set to false, you can use `fetch()`. This is explained above in the autoSync section.
-
 You should add and remove your models to the collection as you normally would, (via `add()` and
 `remove()`) and _remote_ data will be instantly updated. Subsequently, the same events will fire on
 all your other clients immediately.
@@ -240,10 +237,9 @@ var todo = new Todo({
 });
 ```
 
-**BE AWARE!** You do not need to call any functions that will affect _remote_ data. If autoSync is enabled and you call
-`save()` or `fetch()` on the model, **the library will ignore it silently**.
+You do not need to call any functions that will affect _remote_ data when `autoSync` is enabled. Calling `fetch()` will simply fire the `sync` event.
 
-If autoSync is enabled, you should modify your model as you normally would, (via `set()` and `destroy()`) and _remote_ data
+If `autoSync` is enabled, you should modify your model as you normally would, (via `set()` and `destroy()`) and _remote_ data
 will be instantly updated.
 
 #### autoSync: true
