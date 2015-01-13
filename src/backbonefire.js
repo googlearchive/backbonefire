@@ -30,8 +30,7 @@
    */
   Backbone.Firebase._determineAutoSync = function(model, options) {
     var proto = Object.getPrototypeOf(model);
-    return _.extend(
-      {
+    return _.extend({
         autoSync: proto.hasOwnProperty('autoSync') ? proto.autoSync : true
       },
       this,
@@ -195,6 +194,52 @@
   };
 
   /**
+   * A naive promise-like implementation. Requires a syncPromise object.
+   *
+   * syncPromise is an object that has three properties.
+   *  - resolve (bool) - Has the data been retreived from the server?
+   *  - success (bool) - Was the data retrieved successfully?
+   *  - error (Error)  - If there was an error, return the error object.
+   *
+   * This function relies on the syncPromise object being resolved from an
+   * outside source. When the "resolve" property has been set to true,
+   * the "success" and "error" functions will be evaluated.
+   */
+  Backbone.Firebase._promiseEvent = function(params) {
+    // setup default values
+    var syncPromise = params.syncPromise;
+    var success = params.success;
+    var error = params.error;
+    var context = params.context || this;
+    var complete = params.complete;
+
+    // set up an interval that checks to see if data has been synced from the server
+    var promiseInterval = setInterval(_.bind(function() {
+      // if the result has been retrieved from the server
+      if(syncPromise.resolve) {
+
+        // on success fire off the event
+        if(syncPromise.success) {
+          success.call(context);
+        }
+        // on error fire off the returned error
+        else if(syncPromise.err) {
+          error.call(context, syncPromise.err);
+        }
+
+        // fire off the provided completed event
+        if(complete) {
+          complete.call(context);
+        }
+
+        // the "promise" has been resolved, clear the interval
+        clearInterval(promiseInterval);
+      }
+    }, context));
+
+  };
+
+  /**
    * Model responsible for autoSynced objects
    * This model is never directly used. The Backbone.Firebase.Model will
    * inherit from this if it is an autoSynced model
@@ -203,11 +248,19 @@
 
     function SyncModel() {
       // Set up sync events
-
+      this._initialSync = {};
       // apply remote changes locally
       this.firebase.on('value', function(snap) {
         this._setLocal(snap);
+        this._initialSync.resolve = true;
+        this._initialSync.success = true;
         this.trigger('sync', this, null, null);
+      }, function(err) {
+        // indicate that the call has been received from the server
+        // and that an error has occurred
+        this._initialSync.resolve = true;
+        this._initialSync.err = err;
+        this.trigger('error', this, err, null);
       }, this);
 
       // apply local changes remotely
@@ -218,18 +271,20 @@
     }
 
     SyncModel.protoype = {
-      save: function() {
-        console.warn('Save called on a Firebase model with autoSync enabled, ignoring.');
-      },
-      fetch: function() {
-        console.warn('Save called on a Firebase model with autoSync enabled, ignoring.');
-      },
-      sync: function(method, model, options) {
-        if(method === 'delete') {
-          Backbone.Firebase.sync(method, model, options);
-        } else {
-          console.warn('Sync called on a Fireabse model with autoSync enabled, ignoring.');
-        }
+      fetch: function(options) {
+        Backbone.Firebase._promiseEvent({
+          syncPromise: this._initialSync,
+          context: this,
+          success: function() {
+            this.trigger('sync', this, null, options);
+          },
+          error: function(err) {
+            this.trigger('err', this, err, options);
+          },
+          complete: function() {
+            Backbone.Firebase._onCompleteCheck(this._initialSync.err, this, options);
+          }
+        });
       }
     };
 
@@ -252,14 +307,6 @@
       });
 
     }
-
-    OnceModel.protoype = {
-
-      sync: function(method, model, options) {
-        Backbone.Firebase.sync(method, model, options);
-      }
-
-    };
 
     return OnceModel;
   }());
@@ -301,7 +348,10 @@
       }
 
     },
-
+    
+    sync: function(method, model, options) {
+      Backbone.Firebase.sync(method, model, options);
+    },
 
     /**
      * Siliently set the id of the model to the snapshot key
@@ -390,7 +440,7 @@
       create: function(model, options) {
         model.id = Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
-        return Backbone.Collection.prototype.create.apply(this, [model, options]);
+        return Backbone.Collection.prototype.create.call(this, model, options);
       },
       /**
        * Create an id from a Firebase push-id and call Backbone.add, which
@@ -400,7 +450,7 @@
       add: function(model, options) {
         model.id = Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
-        return Backbone.Collection.prototype.add.apply(this, [model, options]);
+        return Backbone.Collection.prototype.add.call(this, model, options);
       },
       /**
        * Proxy to Backbone.Firebase.sync
@@ -442,7 +492,7 @@
   var SyncCollection = (function() {
 
     function SyncCollection() {
-
+      this._initialSync = {};
       // Add handlers for remote events
       this.firebase.on('child_added', _.bind(this._childAdded, this));
       this.firebase.on('child_moved', _.bind(this._childMoved, this));
@@ -450,8 +500,24 @@
       this.firebase.on('child_removed', _.bind(this._childRemoved, this));
 
       // Once handler to emit 'sync' event whenever data changes
-      this.firebase.on('value', _.bind(function() {
-        this.trigger('sync', this, null, null);
+      // Defer the listener incase the data is cached, because
+      // then the once call would be synchronous
+      _.defer(_.bind(function() {
+
+        this.firebase.once('value', function() {
+          // indicate that the call has been received from the server
+          // and the data has successfully loaded
+          this._initialSync.resolve = true;
+          this._initialSync.success = true;
+          this.trigger('sync', this, null, null);
+        }, function(err) {
+          // indicate that the call has been received from the server
+          // and that an error has occurred
+          this._initialSync.resolve = true;
+          this._initialSync.err = err;
+          this.trigger('error', this, err, null);
+        }, this);
+
       }, this));
 
       // Handle changes in any local models.
@@ -461,11 +527,8 @@
     }
 
     SyncCollection.protoype = {
-      comparator: function(model) {
-        return model.id;
-      },
-
       add: function(models, options) {
+        // prepare models
         var parsed = this._parseModels(models);
         options = options ? _.clone(options) : {};
         options.success =
@@ -528,6 +591,27 @@
         return ret;
       },
 
+      // This function does not actually fetch data from the server.
+      // Rather, the "sync" event is fired when data has been loaded
+      // from the server. Since the _initialSync property will indicate
+      // whether the initial load has occurred, the "sync" event can
+      // be fired once _initialSync has been resolved.
+      fetch: function(options) {
+        Backbone.Firebase._promiseEvent({
+          syncPromise: this._initialSync,
+          context: this,
+          success: function() {
+            this.trigger('sync', this, null, options);
+          },
+          error: function(err) {
+            this.trigger('err', this, err, options);
+          },
+          complete: function() {
+            Backbone.Firebase._onCompleteCheck(this._initialSync.err, this, options);
+          }
+        });
+      },
+
       _log: function(msg) {
         if (console && console.log) {
           console.log(msg);
@@ -549,8 +633,8 @@
           }
 
           // call Backbone's prepareModel to apply options
-          model = Backbone.Collection.prototype._prepareModel.apply(
-            this, [model, options || {}]
+          model = Backbone.Collection.prototype._prepareModel.call(
+            this, model, options
           );
 
           if (model.toJSON && typeof model.toJSON == 'function') {
@@ -569,16 +653,17 @@
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
-          Backbone.Collection.prototype.add.apply(this, [model], {silent: true});
+          Backbone.Collection.prototype.add.call(this, [model], {silent: true});
         } else {
-          Backbone.Collection.prototype.add.apply(this, [model]);
+          Backbone.Collection.prototype.add.call(this, [model]);
         }
         this.get(model.id)._remoteAttributes = model;
       },
 
-      _childMoved: function(snap) {
-        // TODO: Investigate: can this occur without the ID changing?
-        this._log('_childMoved called with ' + snap.val());
+      // TODO: child_moved is emitted when the priority for a child is changed, so it
+      // should update the priority of the model and maybe trigger a sort
+      _childMoved: function() {
+
       },
 
       // when a model has changed remotely find differences between the
@@ -620,13 +705,13 @@
 
         if (this._suppressEvent === true) {
           this._suppressEvent = false;
-          Backbone.Collection.prototype.remove.apply(
+          Backbone.Collection.prototype.remove.call(
             this, [model], {silent: true}
           );
         } else {
           // trigger sync because data has been received from the server
           this.trigger('sync', this);
-          Backbone.Collection.prototype.remove.apply(this, [model]);
+          Backbone.Collection.prototype.remove.call(this, [model]);
         }
       },
 
@@ -750,7 +835,7 @@
 
         var newItem = new BaseModel(attrs, opts);
         newItem.autoSync = false;
-        newItem.firebase = self.firebase.child(newItem.id);
+        newItem.firebase = self.firebase.ref().child(newItem.id);
         newItem.sync = Backbone.Firebase.sync;
         newItem.on('change', function(model) {
           var updated = Backbone.Firebase.Model.prototype._updateModel(model);
@@ -761,6 +846,10 @@
 
       };
 
+    },
+
+    comparator: function(model) {
+      return model.id;
     }
 
   });

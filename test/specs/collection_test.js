@@ -246,7 +246,7 @@ describe('Backbone.Firebase.Collection', function() {
       return expect(model.autoSync).to.be.ok;
     });
 
-    it('should call sync when added', function() {
+    it('should call add when added', function() {
       var spy = sinon.spy();
       var Models = Backbone.Firebase.Collection.extend({
         url: 'Mock://',
@@ -255,7 +255,7 @@ describe('Backbone.Firebase.Collection', function() {
 
       var models = new Models();
 
-      models.on('sync', spy);
+      models.on('add', spy);
 
       models.add({ title: 'blah' });
       models.firebase.flush();
@@ -321,22 +321,7 @@ describe('Backbone.Firebase.Collection', function() {
     });
 
     describe('#_childMoved', function() {
-
-      it('shoud call _log', function() {
-        sinon.spy(collection, '_log');
-        var mockSnap = new MockSnap({
-          name: '1',
-          val: {
-            name: 'David'
-          }
-        });
-        collection._childMoved(mockSnap);
-
-        expect(collection._log.calledOnce).to.be.ok;
-
-        collection._log.restore();
-      });
-
+      it('should set priority on model');
     });
 
     describe('#reset', function() {
@@ -386,6 +371,31 @@ describe('Backbone.Firebase.Collection', function() {
         collection.firebase.flush();
 
         expect(spy.calledOnce).to.be.true;
+      });
+
+    });
+
+    describe('#fetch', function() {
+
+      it('should call Backbone.Firebase._promiseEvent', function() {
+        sinon.spy(Backbone.Firebase, '_promiseEvent');
+
+        collection.fetch();
+        collection.firebase.flush();
+
+        expect(Backbone.Firebase._promiseEvent.calledOnce).to.be.ok;
+
+        Backbone.Firebase._promiseEvent.restore();
+      });
+
+      it('should fire success', function() {
+        var successCalled = false;
+        collection.fetch();
+        collection.on('sync', function() {
+          successCalled = true;
+        });
+        collection.firebase.flush();
+        expect(successCalled).to.be.ok;
       });
 
     });
@@ -773,6 +783,30 @@ describe('Backbone.Firebase.Collection', function() {
       });
 
     });
+
+    // TODO: Resolve issue with Mockfirebase
+    // describe('#fetch', function() {
+    //
+    //   it('should call the success option if provided', function() {
+    //     var options = {
+    //       success: sinon.spy()
+    //     };
+    //     collection.fetch(options);
+    //     collection.firebase.flush();
+    //     expect(options.success.calledOnce).to.be.ok;
+    //   });
+    //
+    //   it('should trigger the "sync" event', function() {
+    //     var isSyncCalled = false;
+    //     collection.fetch();
+    //     collection.on('sync', function() {
+    //       isSyncCalled = true;
+    //     });
+    //     collection.firebase.flush();
+    //     expect(isSyncCalled).to.be.ok;
+    //   });
+    //
+    // });
 
     describe('#add', function() {
       it('should call Backbone.Collection.prototype.add', function() {

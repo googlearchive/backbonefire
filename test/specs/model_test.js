@@ -18,6 +18,18 @@ describe('Backbone.Firebase.Model', function() {
     return expect(new Model()).to.be.ok;
   });
 
+  it('should create a model with a urlRoot from its id', function() {
+    var mockUrl = 'https://mock-bf.firebaseio.com/users';
+    var Model = Backbone.Firebase.Model.extend({
+      urlRoot: mockUrl
+    });
+    var model = new Model({
+      id: 'david'
+    });
+
+    model.url().should.equal(mockUrl + '/' + model.get('id'));
+  });
+
   describe('#constructor', function() {
 
     it('should throw an error if an invalid url is provided', function() {
@@ -66,15 +78,6 @@ describe('Backbone.Firebase.Model', function() {
       expect(spy.calledOnce).to.be.ok;
 
     });
-
-  });
-
-  it('should update model', function() {
-    // TODO: Test _updateModel
-  });
-
-  it('should set changed attributes to null', function() {
-    // TODO: Test _updateModel
 
   });
 
@@ -157,32 +160,46 @@ describe('Backbone.Firebase.Model', function() {
       });
     });
 
-    describe('ignored methods', function() {
+    describe('#fetch', function() {
 
-      beforeEach(function() {
-        sinon.spy(console, 'warn');
-      });
-
-      afterEach(function() {
-        console.warn.restore();
-      });
-
-      it('should do nothing when save is called', function() {
+      it('should trigger "sync" when fetch is called', function() {
         var model = new Model();
-        model.save();
-        return expect(console.warn.calledOnce).to.be.ok;
-      });
-
-      it('should do nothing when fetch is called', function() {
-        var model = new Model();
+        var syncIsCalled = false;
         model.fetch();
-        return expect(console.warn.calledOnce).to.be.ok;
+        model.on('sync', function() {
+          syncIsCalled = true;
+        });
+        model.firebase.flush();
+        return expect(syncIsCalled).to.be.ok;
       });
 
-      it('should do nothing when sync is called', function() {
+      it('should call Backbone.Firebase._promiseEvent', function() {
         var model = new Model();
-        model.sync();
-        return expect(console.warn.calledOnce).to.be.ok;
+        sinon.spy(Backbone.Firebase, '_promiseEvent');
+
+        model.fetch();
+        model.firebase.flush();
+
+        expect(Backbone.Firebase._promiseEvent.calledOnce).to.be.ok;
+
+        Backbone.Firebase._promiseEvent.restore();
+      });
+
+    });
+
+    describe('#sync', function() {
+
+      // Backbone.Firebase.Model.sync should proxy to Backbone.Firebase.sync
+      // if it comes from a OnceModel
+      it('should call Backbone.Firebase.sync', function() {
+        sinon.spy(Backbone.Firebase, 'sync');
+
+        model = new Model();
+
+        model.sync('read', model, null);
+
+        expect(Backbone.Firebase.sync.calledOnce).to.be.ok;
+        Backbone.Firebase.sync.restore();
       });
 
     });

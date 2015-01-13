@@ -4,6 +4,67 @@ describe('Backbone.Firebase', function() {
     return expect(Backbone.Firebase).to.be.ok;
   });
 
+  describe('#_promiseEvent', function() {
+    var syncPromise;
+    var clock;
+    beforeEach(function() {
+      syncPromise = {
+        resolve: true
+      };
+      clock = sinon.useFakeTimers();
+    });
+
+    afterEach(function() {
+      clock.restore();
+    });
+
+    it('should resolve with a success', function() {
+      var successCalled = false;
+      syncPromise.success = true;
+      Backbone.Firebase._promiseEvent({
+        syncPromise: syncPromise,
+        success: function() {
+          successCalled = true;
+        },
+        context: this
+      });
+      clock.tick(100);
+      expect(successCalled).to.be.ok;
+    });
+
+    it('should resolve with an error', function() {
+      var errorCalled = false;
+      syncPromise.err = new Error('Error!');
+      Backbone.Firebase._promiseEvent({
+        syncPromise: syncPromise,
+        error: function() {
+          errorCalled = true;
+        },
+        context: this
+      });
+      clock.tick(1000);
+      expect(errorCalled).to.be.ok;
+    });
+
+    it('should resolve with a complete', function() {
+      var completeCalled = false;
+      syncPromise.success = true;
+      Backbone.Firebase._promiseEvent({
+        syncPromise: syncPromise,
+        success: function() {
+
+        },
+        complete: function() {
+          completeCalled = true;
+        },
+        context: this
+      });
+      clock.tick(100);
+      expect(completeCalled).to.be.ok;
+    });
+
+  });
+
   describe("#_isPrimitive", function() {
 
     it('should return false for null', function() {
