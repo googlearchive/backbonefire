@@ -50,7 +50,7 @@ To get started include Firebase and BackboneFire after the usual Backbone depend
 <script src="https://cdn.firebase.com/js/client/2.0.3/firebase.js"></script>
 
 <!-- BackboneFire -->
-<script src="https://cdn.firebase.com/libs/backbonefire/0.5.0/backbonefire.js"></script>
+<script src="https://cdn.firebase.com/libs/backbonefire/0.5.1/backbonefire.js"></script>
 ```
 
 Use the URL above to download both the minified and non-minified versions of BackboneFire from the
