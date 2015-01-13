@@ -850,7 +850,7 @@
 
     comparator: function(model) {
       return model.id;
-    },
+    }
 
   });
 
