@@ -46,21 +46,21 @@ describe('Backbone.Firebase', function() {
       expect(errorCalled).to.be.ok;
     });
 
-    it('should resolve with a completed', function() {
-      var completedCalled = false;
+    it('should resolve with a complete', function() {
+      var completeCalled = false;
       syncPromise.success = true;
       Backbone.Firebase._promiseEvent({
         syncPromise: syncPromise,
         success: function() {
 
         },
-        completed: function() {
-          completedCalled = true;
+        complete: function() {
+          completeCalled = true;
         },
         context: this
       });
       clock.tick(100);
-      expect(completedCalled).to.be.ok;
+      expect(completeCalled).to.be.ok;
     });
 
   });

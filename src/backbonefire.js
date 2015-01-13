@@ -211,7 +211,7 @@
     var success = params.success;
     var error = params.error;
     var context = params.context || this;
-    var completed = params.completed;
+    var complete = params.complete;
 
     // set up an interval that checks to see if data has been synced from the server
     var promiseInterval = setInterval(_.bind(function() {
@@ -228,8 +228,8 @@
         }
 
         // fire off the provided completed event
-        if(completed) {
-          completed.call(context);
+        if(complete) {
+          complete.call(context);
         }
 
         // the "promise" has been resolved, clear the interval
