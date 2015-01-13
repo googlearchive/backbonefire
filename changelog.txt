@@ -1,5 +1,0 @@
-fixed - Improved asynchronous sync behavior.
-feature - Added save and remove for autoSync models.
-feature - Added fetch method for autoSync models.
-fixed - Fixed issue with urlRoot property for models.
-fixed - Fixed bug with comparator override.
