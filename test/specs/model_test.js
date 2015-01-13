@@ -18,6 +18,18 @@ describe('Backbone.Firebase.Model', function() {
     return expect(new Model()).to.be.ok;
   });
 
+  it('should create a model with a urlRoot from its id', function() {
+    var mockUrl = 'https://mock-bf.firebaseio.com/users';
+    var Model = Backbone.Firebase.Model.extend({
+      urlRoot: mockUrl
+    });
+    var model = new Model({
+      id: 'david'
+    });
+
+    model.url().should.equal(mockUrl + '/' + model.get('id'));
+  });
+
   describe('#constructor', function() {
 
     it('should throw an error if an invalid url is provided', function() {
