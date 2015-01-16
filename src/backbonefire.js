@@ -439,7 +439,7 @@
        */
       create: function(model, options) {
         // XXX model prototype broken: this.model.prototype.idAttribute worked around as this.idAttribute
-        model[this.idAttribute] = Backbone.Firebase._getKey(this.firebase.push());
+        model[this.idAttribute] = model[this.idAttribute] || Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
         return Backbone.Collection.prototype.create.call(this, model, options);
       },
@@ -450,7 +450,7 @@
        */
       add: function(model, options) {
         // XXX model prototype broken: this.model.prototype.idAttribute worked around as this.idAttribute
-        model[this.idAttribute] = Backbone.Firebase._getKey(this.firebase.push());
+        model[this.idAttribute] = model[this.idAttribute] || Backbone.Firebase._getKey(this.firebase.push());
         options = _.extend({ autoSync: false }, options);
         return Backbone.Collection.prototype.add.call(this, model, options);
       },
