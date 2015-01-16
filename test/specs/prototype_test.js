@@ -105,7 +105,7 @@ describe('Backbone.Firebase', function() {
         }
       });
 
-      var model = Backbone.Firebase._checkId(mockSnap);
+      var model = Backbone.Firebase._checkId(mockSnap, 'id');
 
       expect(model.id).to.be.ok;
       model.id.should.equal(mockSnap.name());
@@ -118,7 +118,7 @@ describe('Backbone.Firebase', function() {
         val: 'hello'
       });
       try {
-        var model = Backbone.Firebase._checkId(1);
+        var model = Backbone.Firebase._checkId(1, 'id');
       } catch (err) {
         expect(err).to.be.ok
       }
@@ -130,7 +130,7 @@ describe('Backbone.Firebase', function() {
         name: '1',
         val: null
       });
-      var model = Backbone.Firebase._checkId(mockSnap);
+      var model = Backbone.Firebase._checkId(mockSnap, 'id');
       expect(model.id).to.be.ok;
     });
 
