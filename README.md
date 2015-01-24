@@ -1,7 +1,7 @@
 # BackboneFire
 
 [![Build Status](https://travis-ci.org/firebase/backbonefire.svg?branch=master)](https://travis-ci.org/firebase/backbonefire)
-[![Coverage Status](https://img.shields.io/coveralls/firebase/backbonefire.svg)](https://coveralls.io/r/firebase/backbonefire?branch=master)
+[![Coverage Status](https://img.shields.io/coveralls/firebase/backbonefire.svg?branch=master&badge=flat)](https://coveralls.io/r/firebase/backbonefire?branch=master)
 [![Version](https://badge.fury.io/gh/firebase%2Fbackbonefire.svg?branch=master)](http://badge.fury.io/gh/firebase%2Fbackbonefire)
 
 BackboneFire is the officially supported [Backbone](http://backbonejs.org) binding for Firebase. The bindings let you use special model and collection types that allow for synchronizing data with [Firebase](http://www.firebase.com/?utm_medium=web&utm_source=backbonefire).
