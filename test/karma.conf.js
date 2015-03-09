@@ -1,9 +1,19 @@
 module.exports = function(config) {
+  var srcPreprocessors = 'coverage';
+  var reporters = ['spec', 'failed'];
+  function isDebug(arg) {
+    return arg === '--debug';
+  }
+  if (process.argv.some(isDebug)) {
+    sourcePreprocessors = [];
+  } else {
+    reporters.push('coverage');
+  }
   config.set({
     frameworks: ['mocha', 'chai', 'sinon'],
 
     preprocessors: {
-      '../src/*.js': 'coverage'
+      '../src/*.js': srcPreprocessors
     },
 
     files: [
@@ -15,7 +25,7 @@ module.exports = function(config) {
       './specs/*_test.js'
     ],
 
-    reporters: ['spec', 'failed', 'coverage'],
+    reporters: reporters,
     coverageReporter: {
       reporters: [
         {

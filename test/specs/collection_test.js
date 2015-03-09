@@ -194,6 +194,7 @@ describe('Backbone.Firebase.Collection', function() {
         User = Backbone.Model.extend({}),
         Users = Backbone.Firebase.Collection.extend({
           url: 'Mock://',
+          idAttribute: User.prototype.idAttribute,
           initialize: function(models, options) {
             this.model = function(attrs, opts) {
               return new User(_.extend(attrs, { addedFromCollection: true}), opts);
@@ -227,6 +228,7 @@ describe('Backbone.Firebase.Collection', function() {
       User = Backbone.Model.extend({}),
       Users = Backbone.Firebase.Collection.extend({
         url: 'Mock://',
+        idAttribute: User.prototype.idAttribute,
         initialize: function(models, options) {
           this.model = function(attrs, opts) {
             return new User(_.extend(attrs, { addedFromCollection: true}), opts);
@@ -451,6 +453,7 @@ describe('Backbone.Firebase.Collection', function() {
       beforeEach(function() {
         var Collection = Backbone.Firebase.Collection.extend({
           url: 'Mock://',
+          idAttribute: Backbone.Model.prototype.idAttribute,
           autoSync: true
         });
 
