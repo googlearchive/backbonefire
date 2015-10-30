@@ -8,7 +8,26 @@
  * License: MIT
  */
 
-(function(_, Backbone) {
+ (function(factory) {
+   var root = (typeof self == 'object' && self.self == self && self) ||
+     (typeof global == 'object' && global.global == global && global);
+
+   if (typeof define === 'function' && define.amd) {
+     // AMD. Register as an anonymous module.
+     define(['underscore', 'backbone'], function(_, Backbone) {
+       factory(_, Backbone);
+     });
+   } else if (typeof module === 'object' && module.exports) {
+     // Node/CommonJS
+     var _ = require('underscore');
+     var Backbone = require('backbone');
+     module.exports = factory(_, Backbone);
+   } else {
+     // Browser globals
+     factory(root._, root.Backbone);
+   }
+
+ }(function factory(_, Backbone) {
   'use strict';
 
   Backbone.Firebase = {};
@@ -864,4 +883,4 @@
 
   });
 
-})(window._, window.Backbone);
+}));
