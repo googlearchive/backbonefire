@@ -571,7 +571,7 @@
         for (var i = 0; i < parsed.length; i++) {
           var model = parsed[i];
           // XXX model prototype broken: this.model.prototype.idAttribute worked around as this.idAttribute
-          var childRef = this.firebase.child(model[this.idAttribute]);
+          var childRef = this.firebase.ref().child(model[this.idAttribute]);
           if (options.silent === true) {
             this._suppressEvent = true;
           }
