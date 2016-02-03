@@ -245,7 +245,7 @@ will be instantly updated.
 #### autoSync: true
 
 ```javascript
-var RealtimeModel = Backbone.Firebase.Model({
+var RealtimeModel = Backbone.Firebase.Model.extend({
   url: 'https://<your-firebase>.firebaseio.com/mytodo',
   autoSync: true // true by default
 });
@@ -264,7 +264,7 @@ realtimeModel.set('name', 'Bob');
 #### autoSync: false
 
 ```javascript
-var RealtimeModel = Backbone.Firebase.Model({
+var RealtimeModel = Backbone.Firebase.Model.extend({
   url: 'https://<your-firebase>.firebaseio.com/mytodo',
   autoSync: false
 });
