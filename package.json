@@ -44,7 +44,7 @@
     "grunt-karma": "^0.8.3",
     "grunt-notify": "~0.2.7",
     "istanbul": "^0.3.2",
-    "karma": "~0.12.8",
+    "karma": "~0.13.9",
     "karma-chai": "0.0.2",
     "karma-coverage": "^0.2.6",
     "karma-failed-reporter": "0.0.2",
