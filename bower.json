@@ -34,7 +34,7 @@
   "dependencies": {
     "backbone": "<=1.1.0",
     "firebase": "2.0.x",
-    "underscore": "~1.5.2"
+    "underscore": "~1.8.3"
   },
   "devDependencies": {
     "mockfirebase": "~0.3.0"
