@@ -32,8 +32,8 @@
     "index.html"
   ],
   "dependencies": {
-    "firebase": "2.0.x",
     "backbone": "<=1.1.0",
+    "firebase": "2.0.x",
     "underscore": "~1.5.2"
   },
   "devDependencies": {
