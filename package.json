@@ -3,6 +3,7 @@
   "description": "The officially supported Backbone binding for Firebase",
   "version": "0.0.0",
   "author": "Firebase (https://firebase.google.com/)",
+  "license": "MIT",
   "homepage": "https://github.com/firebase/backbonefire/",
   "repository": {
     "type": "git",
@@ -11,12 +12,6 @@
   "bugs": {
     "url": "https://github.com/firebase/backbonefire/issues"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://firebase.mit-license.org/"
-    }
-  ],
   "keywords": [
     "backbone",
     "firebase",
