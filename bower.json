@@ -1,7 +1,7 @@
 {
   "name": "backbonefire",
   "description": "The officially supported Backbone binding for Firebase",
-  "version": "0.0.0",
+  "version": "0.5.1",
   "authors": [
     "Firebase (https://firebase.google.com/)"
   ],
