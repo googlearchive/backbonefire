@@ -395,9 +395,9 @@ describe('Backbone.Firebase.Collection', function() {
         collection.fetch();
         collection.on('sync', function() {
           successCalled = true;
+          expect(successCalled).to.be.ok;
         });
         collection.firebase.flush();
-        expect(successCalled).to.be.ok;
       });
 
     });
