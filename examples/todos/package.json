@@ -1,6 +1,6 @@
 {
   "name": "backbone-fire-todo",
-  "version": "0.0.0",
+  "version": "0.5.1",
   "description": "Todo example using Backbone Fire.",
   "main": "index.html",
   "scripts": {

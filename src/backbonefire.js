@@ -3,7 +3,7 @@
  * bindings let you use special model and collection types that allow for
  * synchronizing data with Firebase.
  *
- * BackboneFire 0.0.0
+ * BackboneFire 0.5.1
  * https://github.com/firebase/backbonefire/
  * License: MIT
  */
