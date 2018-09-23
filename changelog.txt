@@ -1,0 +1,7 @@
+fixed - Fix open source license field on package.json
+fixed - Firebase.Collection#fetch test is now passing
+changed - Update npm and bower package dependencies
+changed - Sort dependencies lexicographically
+fixed - Upgrade karma development package
+feature - Ignore Emacs and VSCode automatic files
+fixed - Travis CI setup pre-install npm and karma-cli

@@ -96,18 +96,17 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-notify');
   grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-copy');
-  grunt.loadNpmTasks('grunt-serve');
 
   // Unit tests
   grunt.registerTask('test', ['karma:unit']);
 
   grunt.registerTask('build', ['jshint', 'concat', 'uglify']);
   grunt.registerTask('default', ['build', 'test']);
-  grunt.registerTask('todo', ['build', 'serve']);
+  grunt.registerTask('todo', ['build', 'connect']);
 };
